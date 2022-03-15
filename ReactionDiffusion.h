@@ -28,7 +28,8 @@ class ReactionDiffusion {
         
         // A = nabla^2
         double* A;
-        double* B;  
+        double* B_u;
+        double* B_v;
 
         double* f1;
         double* f2;
@@ -52,6 +53,10 @@ class ReactionDiffusion {
         
         void TimeIntegrate();
         
+        void f_f1();
+        void f_f2();
+        
+        void Terminate();
 };
 
 #endif

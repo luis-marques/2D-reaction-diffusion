@@ -1,8 +1,12 @@
 #include "ReactionDiffusion.h"
 
 #include <iostream>
+#include <iomanip>
+#include <fstream>
 #include <cmath>
+#include <stdio.h>
 
+using namespace std;
 
 void ReactionDiffusion::SetParameters(
                     const double arg_dt, const int arg_T,
@@ -27,16 +31,31 @@ void ReactionDiffusion::SetParameters(
         
         // A = nabla^2
         A = new double[Ny * Nx*Ny];
-        B = new double[Ny * Nx*Ny];
+        B_u = new double[Ny * Nx*Ny];
+        B_v = new double[Ny * Nx*Ny];
 
         // Add check in case T is not properly divisible by dt (check remainder)
         nr_timesteps = T / dt;
-        std::cout << "nr_timesteps = " << nr_timesteps << "; T = " << T << "; dt = " << dt << std::endl; 
+        cout << "nr_timesteps = " << nr_timesteps << "; T = " << T << "; dt = " << dt << endl; 
         
-        std::cout << "ceil(Ny/2) = " << ceil(Ny/2) << "; Ny = " << Ny << std::endl; 
+        cout << "ceil(Ny/2) = " << ceil(Ny/2) << "; Ny = " << Ny << endl; 
         
         f1 = new double[Nx*Ny];
         f2 = new double[Nx*Ny];
+        
+        
+        // For Debugging
+        cout << "\tParameters of PDE problem to solve, from the ReactionDiffusion class:" << endl;
+        cout << "\tTime-step (dt)" << right << setw(30) << setfill(' ') << dt << endl;
+        cout << "\tIntegration time (T)" << right << setw(30) << setfill(' ') << T << endl;
+        cout << "\tNx" << right << setw(30) << setfill(' ') << Nx << endl;
+        cout << "\tNy" << right << setw(30) << setfill(' ') << Ny << endl;
+        cout << "\ta" << right << setw(30) << setfill(' ') << a << endl;
+        cout << "\tb" << right << setw(30) << setfill(' ') << b << endl;
+        cout << "\tmu1" << right << setw(30) << setfill(' ') << mu1 << endl;
+        cout << "\tmu2" << right << setw(30) << setfill(' ') << mu2 << endl;
+        cout << "\tepsilon" << right << setw(30) << setfill(' ') << eps << endl;
+        
 };
     
 void ReactionDiffusion::SetInitialConditions() {
@@ -62,12 +81,69 @@ void ReactionDiffusion::SetInitialConditions() {
         }
     }
 };
-    
-void ReactionDiffusion::TimeIntegrate (){
-    std::cout << "Time integrate" << std::endl;
+
+void ReactionDiffusion::f_f1() {
+    for (int i = 0; i < Nx*Ny; ++i) {
+        f1[Nx*Ny] = eps * u[Nx*Ny] * (1 - u[Nx*Ny]) * (u[Nx*Ny] - (v[Nx*Ny] + b) / a);
+    }
+};
+
+
+void ReactionDiffusion::f_f2() {
+    for (int i = 0; i < Nx*Ny; ++i) {
+        f2[Nx*Ny] = u[Nx*Ny] * u[Nx*Ny] * u[Nx*Ny] - v[Nx*Ny] ; // also test with pow() to see performance increase
+    }
+};
+
+
+void ReactionDiffusion::TimeIntegrate() {
+    cout << "Starting numerical solving of PDE." << endl;
     
     for (int timestep = 0; timestep < nr_timesteps; ++timestep) {
+        // Get f vectors for time-step n
+        //f_f1();
+        //f_f2();
+        if (timestep % 10000 == 0) { 
+            cout << "Timestep " << timestep << endl;
+        }
     
     }
     
+    cout << "Finished solving PDE (from t_i = 0 to t_f = T)." << endl;
+    
+};
+
+
+void ReactionDiffusion::Terminate() {
+    
+    cout << "Writting output of simulation to file 'output.txt'." << endl;
+    
+    ofstream vOut("output.txt", ios::out | ios::trunc);
+    
+    if (vOut.is_open()) {
+        cout << "File opened successfully" << endl;
+    
+        for (int i = 0; i < Nx; ++i) {
+            for (int j = 0; j < Ny; ++j){
+                vOut << "x" << i << " " 
+                     << "y" << j << " "
+                     << u[i + j*Ny] << " "
+                     << v[i + j*Ny] << endl;
+            }
+            vOut << endl;   // Empty line after each row of points
+        }
+    }
+    else {
+        cout << "Did not open vOut successfully!" << endl;
+    }
+    vOut.close();
+        
+    // De-allocating memory
+    delete[] u;
+    delete[] v;
+    delete[] A;
+    delete[] B_u;
+    delete[] B_v;
+    delete[] f1;
+    delete[] f2;
 };

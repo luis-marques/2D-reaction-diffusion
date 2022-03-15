@@ -75,18 +75,22 @@ int main(int argc, char* argv[]) {
     // Setting the problem parameters as specific in the command-line
     react_diff.SetParameters(dt, T, Nx, Ny, a, b, mu1, mu2, eps);
     
-    cout << "Displaying parameters of Class:" << endl;
-    cout << "dt:" << setw(16) << react_diff.dt << endl;
-    cout << "T:" << setw(16) << react_diff.T << endl;
-    cout << "Nx:" << setw(16) << react_diff.Nx << endl;
-    cout << "Ny:" << setw(16) << react_diff.Ny << endl;
-    cout << "a:" << setw(16) << react_diff.a << endl;
-    cout << "b:" << setw(16) << react_diff.b << endl;
-    cout << "mu1:" << setw(16) << react_diff.mu1 << endl;
-    cout << "mu2:" << setw(16) << react_diff.mu2 << endl;
-    cout << "eps:" << setw(16) << react_diff.eps << endl;
+//    cout << "Displaying parameters of Class:" << endl;
+//    cout << "dt:" << setw(16) << react_diff.dt << endl;
+//    cout << "T:" << setw(16) << react_diff.T << endl;
+//    cout << "Nx:" << setw(16) << react_diff.Nx << endl;
+//    cout << "Ny:" << setw(16) << react_diff.Ny << endl;
+//    cout << "a:" << setw(16) << react_diff.a << endl;
+//    cout << "b:" << setw(16) << react_diff.b << endl;
+//    cout << "mu1:" << setw(16) << react_diff.mu1 << endl;
+//    cout << "mu2:" << setw(16) << react_diff.mu2 << endl;
+//    cout << "eps:" << setw(16) << react_diff.eps << endl;
     
     react_diff.SetInitialConditions();
+    
+    react_diff.TimeIntegrate();
+    
+    react_diff.Terminate();
     
     return 0;
 }
