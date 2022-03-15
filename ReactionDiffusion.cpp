@@ -9,7 +9,7 @@
 using namespace std;
 
 void ReactionDiffusion::SetParameters(
-                    const double arg_dt, const int arg_T,
+                    const double& arg_dt, const int arg_T,
                     const int arg_Nx, const int arg_Ny,
                     const double arg_a, const double arg_b,
                     const double arg_mu1, const double arg_mu2,
@@ -84,14 +84,14 @@ void ReactionDiffusion::SetInitialConditions() {
 
 void ReactionDiffusion::f_f1() {
     for (int i = 0; i < Nx*Ny; ++i) {
-        f1[Nx*Ny] = eps * u[Nx*Ny] * (1 - u[Nx*Ny]) * (u[Nx*Ny] - (v[Nx*Ny] + b) / a);
+        f1[i] = eps * u[i] * (1 - u[i]) * (u[i] - (v[i] + b) / a);
     }
 };
 
 
 void ReactionDiffusion::f_f2() {
     for (int i = 0; i < Nx*Ny; ++i) {
-        f2[Nx*Ny] = u[Nx*Ny] * u[Nx*Ny] * u[Nx*Ny] - v[Nx*Ny] ; // also test with pow() to see performance increase
+        f2[i] = u[i] * u[i] * u[i] - v[i] ; // also test with pow() to see performance increase
     }
 };
 
@@ -100,9 +100,11 @@ void ReactionDiffusion::TimeIntegrate() {
     cout << "Starting numerical solving of PDE." << endl;
     
     for (int timestep = 0; timestep < nr_timesteps; ++timestep) {
+        
         // Get f vectors for time-step n
-        //f_f1();
-        //f_f2();
+        f_f1();
+        f_f2();
+        
         if (timestep % 10000 == 0) { 
             cout << "Timestep " << timestep << endl;
         }
@@ -123,10 +125,10 @@ void ReactionDiffusion::Terminate() {
     if (vOut.is_open()) {
         cout << "File opened successfully" << endl;
     
-        for (int i = 0; i < Nx; ++i) {
-            for (int j = 0; j < Ny; ++j){
-                vOut << "x" << i << " " 
-                     << "y" << j << " "
+        for (int j = 0; j < Ny; ++j){
+            for (int i = 0; i < Nx; ++i) {
+                vOut << i << " " 
+                     << j << " "
                      << u[i + j*Ny] << " "
                      << v[i + j*Ny] << endl;
             }

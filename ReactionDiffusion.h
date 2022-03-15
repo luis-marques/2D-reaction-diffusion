@@ -22,7 +22,7 @@ class ReactionDiffusion {
         
         // Remember to de-allocate this!
         
-        // Solution
+        // Solutions
         double* u;
         double* v;
         
@@ -36,17 +36,11 @@ class ReactionDiffusion {
         
         // Constructor as want to set the variables as constant and that can't be done if they are 
         // initialized in SetParams
-        void SetParameters(const double arg_dt, const int arg_T,
+        void SetParameters(const double& arg_dt, const int arg_T,
                            const int arg_Nx, const int arg_Ny,
                            const double arg_a, const double arg_b,
                            const double arg_mu1, const double arg_mu2,
                            const double arg_eps);
-        
-//        void SetParameters(const double arg_dt, const int arg_T,
-//                           const int arg_Nx, const int arg_Ny,
-//                           const double arg_a, const double arg_b,
-//                           const double arg_mu1, const double arg_mu2,
-//                           const double arg_eps);
 
         
         void SetInitialConditions();
