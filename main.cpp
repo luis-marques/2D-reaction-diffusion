@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
                  "Value of parameter mu1.")
         ("mu2",  po::value<double>()->default_value(0.0),
                  "Value of parameter mu2.")
-        ("eps",  po::value<double>()->default_value(50.0),
+        ("eps",  po::value<double>()->default_value(13.0),
                  "Value of parameter epsilon.")
         ("descending", "Indicate the array should be reversed.")
         ("help",       "Print help message.");
@@ -74,7 +74,6 @@ int main(int argc, char* argv[]) {
     
     // Setting the problem parameters as specific in the command-line
     react_diff.SetParameters(dt, T, Nx, Ny, a, b, mu1, mu2, eps);
-
     
     react_diff.SetInitialConditions();
     
