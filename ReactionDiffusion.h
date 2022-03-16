@@ -23,7 +23,7 @@ class ReactionDiffusion {
     
     // Should be private?
     //private:
-    public:
+    private:
     
         // Class variables (should be static const??)
         double dt;
@@ -45,13 +45,15 @@ class ReactionDiffusion {
         double* v;
         
         // myA = nabla^2
-        double* myA;
-        double* B_u;
-        double* B_v;
+//        double* myA;
+//        double* B_u;
+//        double* B_v;
 
         double* f1;
         double* f2;
         
+        
+    public:
         // Constructor as want to set the variables as constant and that can't be done if they are 
         // initialized in SetParams
         void SetParameters(const double& arg_dt, const int& arg_T,

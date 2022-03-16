@@ -135,19 +135,20 @@ void ReactionDiffusion::SetParameters(
         nr_timesteps = T / dt;
         cout << "nr_timesteps = " << nr_timesteps << "; T = " << T << "; dt = " << dt << endl; 
         
-        cout << "ceil(Ny/2) = " << ceil(Ny/2) << "; Ny = " << Ny << endl; 
-
+        cout << "floor(Ny/2) = " << floor(Ny/2.0) << "; Ny = " << Ny << endl;
+        cout << "ceil(Nx/2) = " << ceil(Nx/2.0) << "; Nx = " << Nx << endl;
+        
         // For Debugging
-        cout << "Parameters of PDE problem to solve, from the ReactionDiffusion class:" << endl;
-        cout << "\t* Time-step (dt)" << right << setw(30) << setfill(' ') << dt << endl;
-        cout << "\t* Integration time (T)" << right << setw(30) << setfill(' ') << T << endl;
-        cout << "\t* Nx" << right << setw(30) << setfill(' ') << Nx << endl;
-        cout << "\t* Ny" << right << setw(30) << setfill(' ') << Ny << endl;
-        cout << "\t* a" << right << setw(30) << setfill(' ') << a << endl;
-        cout << "\t* b" << right << setw(30) << setfill(' ') << b << endl;
-        cout << "\t* mu1" << right << setw(30) << setfill(' ') << mu1 << endl;
-        cout << "\t* mu2" << right << setw(30) << setfill(' ') << mu2 << endl;
-        cout << "\t* epsilon" << right << setw(30) << setfill(' ') << eps << endl;
+        cout << "Parameters of PDE problem to solve:" << endl;
+        cout << "\t*Time-step (dt)" << right << setw(30) << setfill(' ') << dt << endl;
+        cout << "\t*Integration time (T)" << right << setw(30) << setfill(' ') << T << endl;
+        cout << "\t*Nx" << right << setw(30) << setfill(' ') << Nx << endl;
+        cout << "\t*Ny" << right << setw(30) << setfill(' ') << Ny << endl;
+        cout << "\t*a" << right << setw(30) << setfill(' ') << a << endl;
+        cout << "\t*b" << right << setw(30) << setfill(' ') << b << endl;
+        cout << "\t*mu1" << right << setw(30) << setfill(' ') << mu1 << endl;
+        cout << "\t*mu2" << right << setw(30) << setfill(' ') << mu2 << endl;
+        cout << "\t*epsilon" << right << setw(30) << setfill(' ') << eps << endl;
         
 };
     
@@ -156,15 +157,15 @@ void ReactionDiffusion::SetInitialConditions() {
     for (int i = 0; i < Nx; ++i) {
         for (int j = 0; j < Ny; ++j) {
             
-            if (j > ceil(Ny/2)) {
+            if (j > floor(Ny/2.0)) {
                 u[i + j*Nx] = 1.0;
             }
             else{
                 u[i + j*Nx] = 0.0;
             }
             
-            if (i > ceil(Nx/2)) {
-                v[i + j*Nx] = a/2; // make new variable = a/2 to pre-compute this!
+            if (i < ceil(Nx/2.0)) {
+                v[i + j*Nx] = a/2.0; // make new variable = a/2 to pre-compute this!
             }
             else{
                 v[i + j*Nx] = 0;
@@ -202,7 +203,6 @@ void ReactionDiffusion::TimeIntegrate() {
         for (int j = 0; j < Ny; ++j) {
             for (int i = 0; i < Nx; ++i) {
             
-                // along x == 0
                 if (i==0){
                     
                     // Corner (0,0)
@@ -217,6 +217,7 @@ void ReactionDiffusion::TimeIntegrate() {
                         v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i+1 + j*Nx] + v[i+(j-1)*Nx] - 2*v[i+j*Nx]) + dt *f2[i+j*Nx];
                     }
                     
+                    // along x == 0
                     else { 
                         u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i+1 + j*Nx] + u[i+(j+1)*Nx] + u[i+(j-1)*Nx] - 3*u[i+j*Nx]) + dt *f1[i+j*Nx];
                         v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i+1 + j*Nx] + v[i+(j+1)*Nx] + v[i+(j-1)*Nx] - 3*v[i+j*Nx]) + dt *f2[i+j*Nx];
@@ -224,7 +225,6 @@ void ReactionDiffusion::TimeIntegrate() {
                     
                 }
                 
-                // along x == Lx
                 else if (i==(Nx-1)){
                     
                     // Corner (Lx,0)
@@ -239,30 +239,31 @@ void ReactionDiffusion::TimeIntegrate() {
                         v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i-1 + j*Nx] + v[i+(j-1)*Nx] - 2*v[i+j*Nx]) + dt *f2[i+j*Nx];
                     }
                     
+                    // along x == Lx
                     else { 
-                        u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i-1 + j*Nx] + u[i+(j+1)*Nx] + u[i+(j-1)*Nx] - 3*u[i+j*Nx]) + dt *f1[i+j*Nx];
-                        v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i-1 + j*Nx] + v[i+(j+1)*Nx] + v[i+(j-1)*Nx] - 3*v[i+j*Nx]) + dt *f2[i+j*Nx];
+                        u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i-1 + j*Nx] + u[i+(j+1)*Nx] + u[i+(j-1)*Nx] - 3*u[i+j*Nx]) + dt * f1[i+j*Nx];
+                        v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i-1 + j*Nx] + v[i+(j+1)*Nx] + v[i+(j-1)*Nx] - 3*v[i+j*Nx]) + dt * f2[i+j*Nx];
                     }
                     
                 }
                 
                 // along y == 0
                 else if (j==0){
-                    u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i+1 + j*Nx] + u[i-1 + j*Nx] + u[i+(j+1)*Nx] - 3*u[i+j*Nx]) + dt *f1[i+j*Nx];
-                    v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i+1 + j*Nx] + v[i+1 + j*Nx] + v[i+(j+1)*Nx] - 3*v[i+j*Nx]) + dt *f2[i+j*Nx];
+                    u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i+1 + j*Nx] + u[i-1 + j*Nx] + u[i+(j+1)*Nx] - 3*u[i+j*Nx]) + dt * f1[i+j*Nx];
+                    v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i+1 + j*Nx] + v[i+1 + j*Nx] + v[i+(j+1)*Nx] - 3*v[i+j*Nx]) + dt * f2[i+j*Nx];
                 }
                 
                 // along y == Ly
-                else if (j==0){
-                    u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i+1 + j*Nx] + u[i-1 + j*Nx] + u[i+(j-1)*Nx] - 3*u[i+j*Nx]) + dt *f1[i+j*Nx];
-                    v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i+1 + j*Nx] + v[i+1 + j*Nx] + v[i+(j-1)*Nx] - 3*v[i+j*Nx]) + dt *f2[i+j*Nx];
+                else if (j==(Ny-1)){
+                    u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i+1 + j*Nx] + u[i-1 + j*Nx] + u[i+(j-1)*Nx] - 3*u[i+j*Nx]) + dt * f1[i+j*Nx];
+                    v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i+1 + j*Nx] + v[i+1 + j*Nx] + v[i+(j-1)*Nx] - 3*v[i+j*Nx]) + dt * f2[i+j*Nx];
                 }
                 
                 
                 // Central points
                 else {
-                    u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i+1 + j*Nx] + u[i-1 + j*Nx] + u[i+(j+1)*Nx] + u[i+(j-1)*Nx] - 4*u[i+j*Nx]) + dt *f1[i+j*Nx];
-                    v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i+1 + j*Nx] + v[i+1 + j*Nx] + v[i+(j+1)*Nx] + v[i+(j-1)*Nx] - 4*v[i+j*Nx]) + dt *f2[i+j*Nx];
+                    u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i+1 + j*Nx] + u[i-1 + j*Nx] + u[i+(j+1)*Nx] + u[i+(j-1)*Nx] - 4*u[i+j*Nx]) + dt * f1[i+j*Nx];
+                    v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i+1 + j*Nx] + v[i+1 + j*Nx] + v[i+(j+1)*Nx] + v[i+(j-1)*Nx] - 4*v[i+j*Nx]) + dt * f2[i+j*Nx];
                 }
 
             }
@@ -323,8 +324,8 @@ void ReactionDiffusion::Terminate() {
         cout << "File opened successfully" << endl;
         
         // Writing solution row-by-row (x y u v)
-        for (int j = 0; j < Ny; ++j){
-            for (int i = 0; i < Nx; ++i) {
+        for (int j = 0; j < Ny; ++j) {
+            for (int i = 0; i < Nx; ++i){
                 vOut << i << " " 
                      << j << " "
                      << u[i + j*Nx] << " "
