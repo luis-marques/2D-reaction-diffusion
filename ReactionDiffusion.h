@@ -2,6 +2,8 @@
 #define REACT_DIFF
 
 
+//#include "cblas.h"
+//
 // Macro to append an underscore to the Fortran symbols (to mimic behaviour of some Fortran compilers)
 #define F77NAME(x) x##_
 
@@ -45,9 +47,9 @@ class ReactionDiffusion {
         double* v;
         
         // myA = nabla^2
-//        double* myA;
-//        double* B_u;
-//        double* B_v;
+        double* myA;
+        double* B_u;
+        double* B_v;
 
         double* f1;
         double* f2;

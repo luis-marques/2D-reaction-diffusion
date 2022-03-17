@@ -4,13 +4,12 @@
  * 
  * Author: CID-01715222
  */
-
 #include <iostream>
 #include <iomanip>
 
 #include <boost/program_options.hpp>
 
-// To reduce typing
+// To improve code readibility
 using namespace std;
 namespace po = boost::program_options;
 
@@ -18,8 +17,7 @@ namespace po = boost::program_options;
 
 int main(int argc, char* argv[]) {
     // Specify the options we want to make available to the user
-    po::options_description opts(
-        "Sorts a list of random numbers using the insertion sort algorithm.");
+    po::options_description opts("Allowed options");
     opts.add_options()
         ("dt", po::value<double>(),
                  "Time-step to use.")
@@ -39,7 +37,6 @@ int main(int argc, char* argv[]) {
                  "Value of parameter mu2.")
         ("eps",  po::value<double>()->default_value(50.0),
                  "Value of parameter epsilon.")
-        ("descending", "Indicate the array should be reversed.")
         ("help",       "Print help message.");
 
     // Tell Boost to parse the command-line arguments using the list of
@@ -50,15 +47,21 @@ int main(int argc, char* argv[]) {
     po::notify(vm);
 
     // Check if the user gave the "--help" option and print the usage.
-    if (vm.count("help")) {
-        cout << "Performs an insertion sort algorithm on an array of "
-             << "random numbers." << endl;
-        cout << opts << endl;
+    if (vm.count("help") || argc == 1) {
+        cout << "Please provide a value for the required options (indicated with round brackets)." << endl
+             << opts << endl;
         return 0;
     }
 
     // Extract the values given to other parameters using the appropriate
     // data type.
+//    try {
+//        const double dt = vm["dt"].as<double>();
+//    }
+//    catch {
+//        cout << "ERROR" << endl;
+//        return 1;
+//    }
     const double dt = vm["dt"].as<double>();
     const int T = vm["T"].as<int>();
     const int Nx = vm["Nx"].as<int>();
