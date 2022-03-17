@@ -43,6 +43,8 @@ class ReactionDiffusion {
         double u_grad_coef;
         double v_grad_coef;
         double u_squared;
+        double dt_eps;
+        double b_over_a;
         
         int nr_timesteps;
         

@@ -29,6 +29,8 @@ void ReactionDiffusion::SetParameters(
         recip_a = 1.0 / a; // reciprocal of "a"
         u_grad_coef = mu1 * dt;
         v_grad_coef = mu2 * dt;
+        dt_eps = dt * eps;
+        b_over_a = b / a;
         
         u = new double[Nx*Ny];
         v = new double[Nx*Ny];
@@ -117,21 +119,15 @@ void ReactionDiffusion::TimeIntegrate() {
             
             //u_squared = u_prev[k] * u_prev[k];
             
-            u[k] += dt * eps * u_prev[k] * (1.0 - u_prev[k]) * (u_prev[k] - (v_prev[k] + b) * recip_a);
+            u[k] += dt_eps * u_prev[k] * (1.0 - u_prev[k]) * (u_prev[k] - v_prev[k] * recip_a - b_over_a);
             v[k] += dt * (u_prev[k] * u_prev[k] * u_prev[k] - v_prev[k]);
 
         }
         
-        
-        // Get f vectors for time-step n
-        //f_functions();
-        
+                
         for (int j = 0; j < Ny; ++j) {
             for (int i = 0; i < Nx; ++i) {
-            
-                
-                //u[i+j*Nx] = dt * eps * u_prev[i+j*Nx] * (1.0 - u_prev[i+j*Nx]) * (u_prev[i+j*Nx] - (v_prev[i+j*Nx] + b) * recip_a);
-                //v[i+j*Nx] = dt * ( u_prev[i+j*Nx] * u_prev[i+j*Nx] * u_prev[i+j*Nx] - v_prev[i+j*Nx]);
+
                 
                 if (i==0){
                     
@@ -192,8 +188,8 @@ void ReactionDiffusion::TimeIntegrate() {
                 
                 // Central points
                 else {
-                    u[i+j*Nx] += u_grad_coef*(u_prev[i+1 + j*Nx] + u[i-1 + j*Nx] + u_prev[i+(j+1)*Nx] + u_prev[i+(j-1)*Nx] - 4*u_prev[i+j*Nx]);
-                    v[i+j*Nx] += v_grad_coef*(v_prev[i+1 + j*Nx] + v[i-1 + j*Nx] + v_prev[i+(j+1)*Nx] + v_prev[i+(j-1)*Nx] - 4*v_prev[i+j*Nx]);
+                    u[i+j*Nx] += u_grad_coef*(u_prev[i+1 + j*Nx] + u_prev[i-1 + j*Nx] + u_prev[i+(j+1)*Nx] + u_prev[i+(j-1)*Nx] - 4*u_prev[i+j*Nx]);
+                    v[i+j*Nx] += v_grad_coef*(v_prev[i+1 + j*Nx] + v_prev[i-1 + j*Nx] + v_prev[i+(j+1)*Nx] + v_prev[i+(j-1)*Nx] - 4*v_prev[i+j*Nx]);
                 }
 
             }
