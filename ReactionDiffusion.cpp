@@ -25,12 +25,13 @@ void ReactionDiffusion::SetParameters(
         mu2 = arg_mu2;
         eps = arg_eps;
         
+        // 
+        recip_a = 1.0 / a; // reciprocal of "a"
+        u_grad_coef = mu1 * dt;
+        v_grad_coef = mu2 * dt;
         
         u = new double[Nx*Ny];
         v = new double[Nx*Ny];
-        
-        f1 = new double[Nx*Ny];
-        f2 = new double[Nx*Ny];
 
         // Add check in case T is not properly divisible by dt (check remainder)
         nr_timesteps = T / dt;
@@ -86,48 +87,70 @@ void ReactionDiffusion::SetInitialConditions() {
         }
     }
 };
-
-// dt * f1 directly & dt * f2 directly
-void ReactionDiffusion::f_functions() {
-
-    for (int i = 0; i < Nx*Ny; ++i) {
-        f1[i] = eps * u[i] * (1.0 - u[i]) * (u[i] - (v[i] + b) / a);
-        
-        f2[i] = u[i] * u[i] * u[i] - v[i] ; // also test with pow() to see performance increase
-    }
-    
-};
+//
+//// dt * f1 directly & dt * f2 directly
+//void ReactionDiffusion::f_functions() {
+//
+//    for (int i = 0; i < Nx*Ny; ++i) {
+////        f1[i] = eps * u_prev[i] * (1.0 - u_prev[i]) * (u_prev[i] - (v_prev[i] + b) * recip_a);
+//        
+//        // f2[i] = u_prev[i] * u_prev[i] * u_prev[i] - v_prev[i] ; // also test with pow() to see performance increase
+//    }
+//    
+//};
 
 
 void ReactionDiffusion::TimeIntegrate() {
     cout << "Starting numerical solving of PDE." << endl;
     
+    
+    //
+    u_prev = new double[Nx*Ny];
+    v_prev = new double[Nx*Ny];
+    
     for (int timestep = 0; timestep < nr_timesteps; ++timestep) {
         
+        // Copying u,v to u_prev, v_prev
+        for (int k = 0; k < Nx*Ny; ++k) {
+            u_prev[k] = u[k];
+            v_prev[k] = v[k];
+            
+            //u_squared = u_prev[k] * u_prev[k];
+            
+            u[k] += dt * eps * u_prev[k] * (1.0 - u_prev[k]) * (u_prev[k] - (v_prev[k] + b) * recip_a);
+            v[k] += dt * (u_prev[k] * u_prev[k] * u_prev[k] - v_prev[k]);
+
+        }
+        
+        
         // Get f vectors for time-step n
-        f_functions();
+        //f_functions();
         
         for (int j = 0; j < Ny; ++j) {
             for (int i = 0; i < Nx; ++i) {
             
+                
+                //u[i+j*Nx] = dt * eps * u_prev[i+j*Nx] * (1.0 - u_prev[i+j*Nx]) * (u_prev[i+j*Nx] - (v_prev[i+j*Nx] + b) * recip_a);
+                //v[i+j*Nx] = dt * ( u_prev[i+j*Nx] * u_prev[i+j*Nx] * u_prev[i+j*Nx] - v_prev[i+j*Nx]);
+                
                 if (i==0){
                     
                     // Corner (0,0)
-                    if (j==0) {
-                        u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i+1 + j*Nx] + u[i+(j+1)*Nx] - 2*u[i+j*Nx]) + dt *f1[i+j*Nx];
-                        v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i+1 + j*Nx] + v[i+(j+1)*Nx] - 2*v[i+j*Nx]) + dt *f2[i+j*Nx];
-                    }
+                    if (j==0) { //f1[i] = dt * eps * u_prev[i+j*Nx] * (1.0 - u_prev[i+j*Nx]) * (u_prev[i+j*Nx] - (v_prev[i+j*Nx] + b) * recip_a);
+                        u[i+j*Nx] += u_grad_coef*(u_prev[i+1 + j*Nx] + u_prev[i+(j+1)*Nx] - 2*u_prev[i+j*Nx]);
+                        v[i+j*Nx] += v_grad_coef*(v_prev[i+1 + j*Nx] + v_prev[i+(j+1)*Nx] - 2*v_prev[i+j*Nx]);
+                    } // f2[i] =  dt * ( u_prev[i+j*Nx] * u_prev[i+j*Nx] * u_prev[i+j*Nx] - v_prev[i+j*Nx]);
                     
                     // Other corner (0, Ly)
                     else if (j == (Ny-1)) {
-                        u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i+1 + j*Nx] + u[i+(j-1)*Nx] - 2*u[i+j*Nx]) + dt *f1[i+j*Nx];
-                        v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i+1 + j*Nx] + v[i+(j-1)*Nx] - 2*v[i+j*Nx]) + dt *f2[i+j*Nx];
+                        u[i+j*Nx] += u_grad_coef*(u_prev[i+1 + j*Nx] + u_prev[i+(j-1)*Nx] - 2*u_prev[i+j*Nx]);
+                        v[i+j*Nx] += v_grad_coef*(v_prev[i+1 + j*Nx] + v_prev[i+(j-1)*Nx] - 2*v_prev[i+j*Nx]);
                     }
                     
                     // along x == 0
                     else { 
-                        u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i+1 + j*Nx] + u[i+(j+1)*Nx] + u[i+(j-1)*Nx] - 3*u[i+j*Nx]) + dt *f1[i+j*Nx];
-                        v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i+1 + j*Nx] + v[i+(j+1)*Nx] + v[i+(j-1)*Nx] - 3*v[i+j*Nx]) + dt *f2[i+j*Nx];
+                        u[i+j*Nx] += u_grad_coef*(u_prev[i+1 + j*Nx] + u_prev[i+(j+1)*Nx] + u_prev[i+(j-1)*Nx] - 3*u_prev[i+j*Nx]) ;
+                        v[i+j*Nx] += v_grad_coef*(v_prev[i+1 + j*Nx] + v_prev[i+(j+1)*Nx] + v_prev[i+(j-1)*Nx] - 3*v_prev[i+j*Nx]) ;
                     }
                     
                 }
@@ -136,41 +159,41 @@ void ReactionDiffusion::TimeIntegrate() {
                     
                     // Corner (Lx,0)
                     if (j==0) {
-                        u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i-1 + j*Nx] + u[i+(j+1)*Nx] - 2*u[i+j*Nx]) + dt *f1[i+j*Nx];
-                        v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i-1 + j*Nx] + v[i+(j+1)*Nx] - 2*v[i+j*Nx]) + dt *f2[i+j*Nx];
+                        u[i+j*Nx] += u_grad_coef*(u_prev[i-1 + j*Nx] + u_prev[i+(j+1)*Nx] - 2*u_prev[i+j*Nx]) ;
+                        v[i+j*Nx] += v_grad_coef*(v_prev[i-1 + j*Nx] + v_prev[i+(j+1)*Nx] - 2*v_prev[i+j*Nx]) ;
                     }
                     
                     // Other corner (Lx, Ly)
                     else if (j == (Ny-1)) {
-                        u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i-1 + j*Nx] + u[i+(j-1)*Nx] - 2*u[i+j*Nx]) + dt *f1[i+j*Nx];
-                        v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i-1 + j*Nx] + v[i+(j-1)*Nx] - 2*v[i+j*Nx]) + dt *f2[i+j*Nx];
+                        u[i+j*Nx] += u_grad_coef*(u_prev[i-1 + j*Nx] + u_prev[i+(j-1)*Nx] - 2*u_prev[i+j*Nx]) ;
+                        v[i+j*Nx] += v_grad_coef*(v_prev[i-1 + j*Nx] + v_prev[i+(j-1)*Nx] - 2*v_prev[i+j*Nx]) ;
                     }
                     
                     // along x == Lx
                     else { 
-                        u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i-1 + j*Nx] + u[i+(j+1)*Nx] + u[i+(j-1)*Nx] - 3*u[i+j*Nx]) + dt * f1[i+j*Nx];
-                        v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i-1 + j*Nx] + v[i+(j+1)*Nx] + v[i+(j-1)*Nx] - 3*v[i+j*Nx]) + dt * f2[i+j*Nx];
+                        u[i+j*Nx] += u_grad_coef*(u_prev[i-1 + j*Nx] + u_prev[i+(j+1)*Nx] + u_prev[i+(j-1)*Nx] - 3*u_prev[i+j*Nx]) ;
+                        v[i+j*Nx] += v_grad_coef*(v_prev[i-1 + j*Nx] + v_prev[i+(j+1)*Nx] + v_prev[i+(j-1)*Nx] - 3*v_prev[i+j*Nx]) ;
                     }
                     
                 }
                 
                 // along y == 0
                 else if (j==0){
-                    u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i+1 + j*Nx] + u[i-1 + j*Nx] + u[i+(j+1)*Nx] - 3*u[i+j*Nx]) + dt * f1[i+j*Nx];
-                    v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i+1 + j*Nx] + v[i-1 + j*Nx] + v[i+(j+1)*Nx] - 3*v[i+j*Nx]) + dt * f2[i+j*Nx];
+                    u[i+j*Nx] += u_grad_coef*(u_prev[i+1 + j*Nx] + u_prev[i-1 + j*Nx] + u_prev[i+(j+1)*Nx] - 3*u_prev[i+j*Nx]);
+                    v[i+j*Nx] += v_grad_coef*(v_prev[i+1 + j*Nx] + v_prev[i-1 + j*Nx] + v_prev[i+(j+1)*Nx] - 3*v_prev[i+j*Nx]);
                 }
                 
                 // along y == Ly
                 else if (j==(Ny-1)){
-                    u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i+1 + j*Nx] + u[i-1 + j*Nx] + u[i+(j-1)*Nx] - 3*u[i+j*Nx]) + dt * f1[i+j*Nx];
-                    v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i+1 + j*Nx] + v[i-1 + j*Nx] + v[i+(j-1)*Nx] - 3*v[i+j*Nx]) + dt * f2[i+j*Nx];
+                    u[i+j*Nx] += u_grad_coef*(u_prev[i+1 + j*Nx] + u_prev[i-1 + j*Nx] + u_prev[i+(j-1)*Nx] - 3*u_prev[i+j*Nx]);
+                    v[i+j*Nx] += v_grad_coef*(v_prev[i+1 + j*Nx] + v_prev[i-1 + j*Nx] + v_prev[i+(j-1)*Nx] - 3*v_prev[i+j*Nx]);
                 }
                 
                 
                 // Central points
                 else {
-                    u[i+j*Nx] = u[i+j*Nx] + mu1*dt*(u[i+1 + j*Nx] + u[i-1 + j*Nx] + u[i+(j+1)*Nx] + u[i+(j-1)*Nx] - 4*u[i+j*Nx]) + dt * f1[i+j*Nx];
-                    v[i+j*Nx] = v[i+j*Nx] + mu2*dt*(v[i+1 + j*Nx] + v[i-1 + j*Nx] + v[i+(j+1)*Nx] + v[i+(j-1)*Nx] - 4*v[i+j*Nx]) + dt * f2[i+j*Nx];
+                    u[i+j*Nx] += u_grad_coef*(u_prev[i+1 + j*Nx] + u[i-1 + j*Nx] + u_prev[i+(j+1)*Nx] + u_prev[i+(j-1)*Nx] - 4*u_prev[i+j*Nx]);
+                    v[i+j*Nx] += v_grad_coef*(v_prev[i+1 + j*Nx] + v[i-1 + j*Nx] + v_prev[i+(j+1)*Nx] + v_prev[i+(j-1)*Nx] - 4*v_prev[i+j*Nx]);
                 }
 
             }
@@ -231,6 +254,4 @@ void ReactionDiffusion::Terminate() {
     // De-allocating memory
     delete[] u;
     delete[] v;
-    delete[] f1;
-    delete[] f2;
 };

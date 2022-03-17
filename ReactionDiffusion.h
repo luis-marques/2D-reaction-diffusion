@@ -38,6 +38,12 @@ class ReactionDiffusion {
         double mu2;
         double eps;
         
+        
+        double recip_a;
+        double u_grad_coef;
+        double v_grad_coef;
+        double u_squared;
+        
         int nr_timesteps;
         
         // Remember to de-allocate this!
@@ -45,9 +51,8 @@ class ReactionDiffusion {
         // Solutions
         double* u;
         double* v;
-
-        double* f1;
-        double* f2;
+        double* u_prev;
+        double* v_prev;
         
         
     public:
@@ -63,9 +68,7 @@ class ReactionDiffusion {
         void SetInitialConditions();
                 
         void TimeIntegrate();
-        
-        void f_functions();
-        
+                
         void Terminate();
 };
 
