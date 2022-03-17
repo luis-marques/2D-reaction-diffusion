@@ -45,11 +45,6 @@ class ReactionDiffusion {
         // Solutions
         double* u;
         double* v;
-        
-        // myA = nabla^2
-        double* myA;
-        double* B_u;
-        double* B_v;
 
         double* f1;
         double* f2;
@@ -66,9 +61,7 @@ class ReactionDiffusion {
 
         
         void SetInitialConditions();
-        
-        void PopulateA(double* MATRIX, const int& ROWS, const int& COLUMNS);
-        
+                
         void TimeIntegrate();
         
         void f_functions();
