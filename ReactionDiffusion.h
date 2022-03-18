@@ -1,26 +1,12 @@
 #ifndef REACT_DIFF
 #define REACT_DIFF
 
-
-//#include "cblas.h"
-//
-// Macro to append an underscore to the Fortran symbols (to mimic behaviour of some Fortran compilers)
-#define F77NAME(x) x##_
-
-// Prototypes for the BLAS routines. Using "C" naming to avoid name mangling
-extern "C" {
-    void F77NAME(dsbmv) (const char& uplo, const int& N, const int& BW,
-                         const double& alpha, double* A, const int& lda,
-                         double* x, const int& incx,
-                         const double& beta, double* y, const int& incy);
-    void F77NAME(daxpy) (const int& N, const double& alpha, 
-                         const double* x, const int& incx,
-                         const double* y, const int& incy);
-    void F77NAME(dcopy) (const int& N, const double* x, const int& incx,
-                         const double* y, const int& incy);
-}
-
-
+/**
+ * @class ReactionDiffusion
+ * @author Luis Marques
+ * @file ReactionDiffusion.h
+ * @brief 
+ */
 class ReactionDiffusion {
     
     // Should be private?
@@ -47,9 +33,7 @@ class ReactionDiffusion {
         double b_over_a;
         
         int nr_timesteps;
-        
-        // Remember to de-allocate this!
-        
+                
         // Solutions
         double* u;
         double* v;

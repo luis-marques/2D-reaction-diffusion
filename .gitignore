@@ -3,3 +3,6 @@ compile_flags.txt
 main
 output.txt
 .git
+latex/
+html/
+initial*

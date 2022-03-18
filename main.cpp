@@ -1,8 +1,9 @@
-/* Program:
+/* Program: This program numerically solves a 2D reaction-diffusion problem
+ * using parallel computing. 
  * 
- * Tested: 
+ * Tested on: Typhoon (& Spitfire), Debian GNU/Linux 11 (bullseye).
  * 
- * Author: CID-01715222
+ * Author: CID-01715222.
  */
 #include <iostream>
 #include <iomanip>

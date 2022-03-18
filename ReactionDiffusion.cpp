@@ -8,6 +8,18 @@
 
 using namespace std;
 
+/**
+ * @brief Saves
+ * @param arg_dt
+ * @param arg_T
+ * @param arg_Nx
+ * @param arg_Ny
+ * @param arg_a
+ * @param arg_b
+ * @param arg_mu1
+ * @param arg_mu2
+ * @param arg_eps
+ */
 void ReactionDiffusion::SetParameters(
                     const double& arg_dt, const int& arg_T,
                     const int& arg_Nx, const int& arg_Ny,
@@ -39,10 +51,6 @@ void ReactionDiffusion::SetParameters(
         nr_timesteps = T / dt;
         cout << "nr_timesteps = " << nr_timesteps << "; T = " << T << "; dt = " << dt << endl; 
         
-//        cout << "Ly/2 = " << (Ny-1)/2.0 << "; Lx/2 = " << (Nx-1)/2.0 << endl;
-//        cout << "floor(Ny/2) = " << floor(Ny/2.0) << "; Ny = " << Ny << endl;
-//        cout << "ceil(Nx/2) = " << ceil(Nx/2.0) << "; Nx = " << Nx << endl;
-//        
         // For Debugging
         cout << "Parameters of PDE problem to solve:" << endl;
         cout << "\t*Time-step (dt)" << right << setw(30) << setfill(' ') << dt << endl;
@@ -55,8 +63,11 @@ void ReactionDiffusion::SetParameters(
         cout << "\t*mu2" << right << setw(30) << setfill(' ') << mu2 << endl;
         cout << "\t*epsilon" << right << setw(30) << setfill(' ') << eps << endl;
         
-};
-    
+}
+
+/**
+ * @brief Populates the u,v arrays with their initial conditions.
+ */
 void ReactionDiffusion::SetInitialConditions() {
     
     int Lx = (Nx - 1);
@@ -88,20 +99,16 @@ void ReactionDiffusion::SetInitialConditions() {
             
         }
     }
-};
-//
-//// dt * f1 directly & dt * f2 directly
-//void ReactionDiffusion::f_functions() {
-//
-//    for (int i = 0; i < Nx*Ny; ++i) {
-////        f1[i] = eps * u_prev[i] * (1.0 - u_prev[i]) * (u_prev[i] - (v_prev[i] + b) * recip_a);
-//        
-//        // f2[i] = u_prev[i] * u_prev[i] * u_prev[i] - v_prev[i] ; // also test with pow() to see performance increase
-//    }
-//    
-//};
+}
 
-
+/**
+ * @brief Performs integration over time using the Explicit (Forward)
+ * Euler numerical scheme.
+ * 
+ * A discrete update of the u,v arrays is run \f$ n=T/dt \f$ times
+ * where \f$ dt \f$ is timestep used for integration and
+ * \f$ T \f$ the total integration time.
+ */
 void ReactionDiffusion::TimeIntegrate() {
     cout << "Starting numerical solving of PDE." << endl;
     
@@ -204,24 +211,27 @@ void ReactionDiffusion::TimeIntegrate() {
     // delete[] dummy;
     cout << "Finished solving PDE (from t_i = 0 to t_f = T)." << endl;
     
-};
+}
 
-/*
+
+/**
+ * @brief Responsible for saving results of numerical simulation to a text
+ * file called 'output.txt'. Also deals with memory de-allocation and
+ * other procedures that should be run at the end of the program execution.
  * 
- * 
- * 
- * 
- * Commands to plot u,v on domain:
+ * To visualize the result of the simulation one can run the following commands:
  * $ gnuplot
  * $ set pm3d at st
  * $ set view map
  * $ set cbrange[0:1]
  * 
- * $ splot 'output.txt' using 1:2:3 w l palette <- Plots 'u'
- * OR
- * $ splot 'output.txt' using 1:2:4 w l palette <- Plots 'v'
+ * and then
+ * $ splot 'output.txt' using 1:2:3 w l palette
+ * to plot 'u' over the domain, or instead
+ * $ splot 'output.txt' using 1:2:4 w l palette
+ * to plot 'v' over the domain.
  * 
- * */
+ */
 void ReactionDiffusion::Terminate() {
     
     cout << "Writting output of simulation to file 'output.txt'." << endl;
@@ -250,4 +260,6 @@ void ReactionDiffusion::Terminate() {
     // De-allocating memory
     delete[] u;
     delete[] v;
-};
+    delete[] u_prev;
+    delete[] v_prev;
+}
