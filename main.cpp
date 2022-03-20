@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include <boost/program_options.hpp>
+#include <omp.h>
 
 // To improve code readibility
 using namespace std;
@@ -16,6 +17,20 @@ namespace po = boost::program_options;
 #include "ReactionDiffusion.h"
 
 int main(int argc, char* argv[]) {
+    
+    // Getting number of threads (as set in OMP_NUM_THREADS env variable) and
+    // checking that satisfies the requirement set in Section 2.4 of the handout.
+    int max_nr_threads = omp_get_max_threads();
+    if  ( (max_nr_threads != 1) && (max_nr_threads != 2) && (max_nr_threads != 4) &&
+          (max_nr_threads != 8) && (max_nr_threads != 16) && (max_nr_threads != 32) &&
+          (max_nr_threads != 64) ) {
+          
+            cout << "Error: Program is being run with " << max_nr_threads << " threads." << endl;
+            cout << "This program should only be run with 1, 2, 4, 8, 16, 32 or 64 threads." << endl;
+            cout << "Please change the number of threads by altering the 'OMP_NUM_THREADS' env variable." << endl;
+            return 0;
+        }
+    
     // Specify the options we want to make available to the user
     po::options_description opts("Allowed options");
     // dt and T are only required parameters since they do not appear in Table 1.
@@ -51,11 +66,12 @@ int main(int argc, char* argv[]) {
     try {
         po::store(po::parse_command_line(argc, argv, opts), vm);
         
-        // Check for if user asked for help or if no arguments were supplied.
+        // If the user asked for help, or no arguments were supplied, provide
+        // help message and lists the possible arguments.
         if (vm.count("help") || argc == 1) {
             cout << "Please provide a value for all the required options (optional options are indicated with round brackets)." << endl
                  << opts << endl;
-            return 1;
+            return 0;
         }
         
         po::notify(vm);
@@ -63,7 +79,7 @@ int main(int argc, char* argv[]) {
     } catch (exception& e) {
         cout << "Error: " << e.what() << endl;
         cout << opts << endl;
-        return 1;
+        return 0;
     }
     
     // Extracts values given to parameters using the appropriate datatype.
@@ -76,7 +92,7 @@ int main(int argc, char* argv[]) {
     const double mu1 = vm["mu1"].as<double>();
     const double mu2 = vm["mu2"].as<double>();
     const double eps = vm["eps"].as<double>();
-
+ 
     
     // Initializing Reaction Diffusion class
     ReactionDiffusion react_diff;

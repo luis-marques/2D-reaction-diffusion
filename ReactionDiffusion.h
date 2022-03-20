@@ -1,8 +1,6 @@
 #ifndef REACT_DIFF
 #define REACT_DIFF
 
-#include <omp.h>
-
 /**
  * @class ReactionDiffusion
  * @author Luis Marques
@@ -33,17 +31,16 @@ class ReactionDiffusion {
         double u_squared;
         double dt_eps;
         double b_over_a;
+        double half_a;
         int nr_timesteps;
                 
         // Solution fields.
         double* u;
         double* v;
-        double* u_prev;
-        double* v_prev;
+        double* u_next;
+        double* v_next;
         int Ly_index;
         int Lx_index;
-        //double* u_next;
-        //double* v_next;
         
         
     // Methods are public as these must be accessed outside.

@@ -2,14 +2,17 @@
 # Default behavior is optimized build, to get debug build run "$ make DEBUG=1"
 DEBUG		?= 0
 
+# https://wiki.gentoo.org/wiki/GCC_optimization#Optimizing
+
 ifeq ($(DEBUG), 1)
-	CXXFLAGS	= -std=c++11 -Wall -Wshadow -pedantic -O0 -g
+	CXXFLAGS	= -fopenmp -std=c++11 -Wall -Wshadow -pedantic -O0 -g
 else
-	CXXFLAGS	= -std=c++11 -O4
+	CXXFLAGS	= -fopenmp -std=c++11 -O4 -march=native
 endif
 
 CC			= g++
 LDLIBS		= -lboost_program_options
+LDFLAGS		= -fopenmp
 TARGET		= main
 HDRS 		= ReactionDiffusion.h
 
