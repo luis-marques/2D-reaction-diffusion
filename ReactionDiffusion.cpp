@@ -54,21 +54,23 @@ void ReactionDiffusion::SetParameters(
         Ly_index = Nx*(Ny-1);
         Lx_index = (Nx-1);
 
-        // Add check in case T is not properly divisible by dt (check remainder)
+        // Add check in case T is not properly divisible by dt (check remainder)!!!!!!!
         nr_timesteps = T / dt;
         cout << "nr_timesteps = " << nr_timesteps << "; T = " << T << "; dt = " << dt << endl; 
         
         // For Debugging
-        cout << "Parameters of PDE problem to solve:" << endl;
-        cout << "\t*Time-step (dt)" << right << setw(30) << setfill(' ') << dt << endl;
-        cout << "\t*Integration time (T)" << right << setw(30) << setfill(' ') << T << endl;
-        cout << "\t*Nx" << right << setw(30) << setfill(' ') << Nx << endl;
-        cout << "\t*Ny" << right << setw(30) << setfill(' ') << Ny << endl;
-        cout << "\t*a" << right << setw(30) << setfill(' ') << a << endl;
-        cout << "\t*b" << right << setw(30) << setfill(' ') << b << endl;
-        cout << "\t*mu1" << right << setw(30) << setfill(' ') << mu1 << endl;
-        cout << "\t*mu2" << right << setw(30) << setfill(' ') << mu2 << endl;
-        cout << "\t*epsilon" << right << setw(30) << setfill(' ') << eps << endl;
+        cout << endl;
+        cout << "Parameters of PDE problem to solve:"        << endl;
+        cout << left << setw(18) << "    - dt"        << dt  << endl;
+        cout << left << setw(18) << "    - T:"        << T   << endl;
+        cout << left << setw(18) << "    - Nx:"       << Nx  << endl;
+        cout << left << setw(18) << "    - Ny:"       << Ny  << endl;
+        cout << left << setw(18) << "    - a:"        << a   << endl;
+        cout << left << setw(18) << "    - b:"        << b   << endl;
+        cout << left << setw(18) << "    - mu1:"      << mu1 << endl;
+        cout << left << setw(18) << "    - mu2:"      << mu2 << endl;
+        cout << left << setw(18) << "    - epsilon:"  << eps << endl;
+        cout << endl;
         
 }
 
@@ -124,7 +126,7 @@ void ReactionDiffusion::SetInitialConditions() {
  * \f$ T \f$ the total integration time.
  */
 void ReactionDiffusion::TimeIntegrate() {
-    cout << "Starting numerical solving of PDE." << endl;
+    cout << "Starting numerical solving of PDE.\n" << endl;
     
     
     //
@@ -143,14 +145,15 @@ void ReactionDiffusion::TimeIntegrate() {
 
                     // Along same column j=0 (3 below)
                     // Corner (0, 0) (i=0, j=0)
-            #pragma omp sections
-            {
-                #pragma omp section
+//            #pragma omp sections
+//            {
+//                #pragma omp section
                 u_next[0] = u[0] + u_grad_coef * (u[1] + u[Nx] - 2*u[0]);
                 
                
                 // Along (y==0) (0<i<Nx, j=0)
-                #pragma omp section
+  //              #pragma omp section
+                
                 for (int i = 1; i < (Nx-1); i++) {
                    // #pragma omp task firstprivate(i)
                    // {
@@ -162,14 +165,16 @@ void ReactionDiffusion::TimeIntegrate() {
                // #pragma omp task
                 //{
                     // Corner (Lx, 0) (i=Nx-1, j=0) Lx_index = (Nx-1)
-                #pragma omp section
+         //       #pragma omp section
                 u_next[Lx_index] = u[Lx_index] + u_grad_coef*(u[Lx_index - 1] + u[Lx_index + Nx] - 2*u[Lx_index]);
                 //}
                 
                 
                 
                 // Central points (0<i<Nx-1, 0<j<Ny-1)
-                #pragma omp section
+             //   #pragma omp section
+                //#pragma omp parallel for schedule(static)
+                #pragma omp for
                 for (int j = 1; j < (Ny-1); ++j) {
                     for (int i = 1; i < (Nx-1); ++i) {
                         u_next[i+j*Nx] = u[i+j*Nx] + u_grad_coef*(u[i+1 + j*Nx] + u[i-1 + j*Nx] + u[i+(j+1)*Nx] + u[i+(j-1)*Nx] - 4*u[i+j*Nx]);
@@ -178,14 +183,14 @@ void ReactionDiffusion::TimeIntegrate() {
                 
                 
                 // Along (x==0) (i=0, 0<j<Ny-1)
-                #pragma omp section
+          //      #pragma omp section
                 for (int j = Nx; j < Nx*(Ny-1); j+=Nx) {
                     u_next[j] = u[j] + u_grad_coef*(u[1 + j] + u[j+Nx] + u[j-Nx] - 3*u[j]);
                 }
                 
             
                 // Along (x==Lx) (i=Nx-1, 0<j<Ny-1)
-                #pragma omp section
+         //       #pragma omp section
                 for (int j = 1; j < (Ny-1); j++) {
                     u_next[Lx_index + j*Nx] = u[Lx_index + j*Nx] + u_grad_coef*(u[Lx_index - 1 + j*Nx] + u[Lx_index + (j+1)*Nx] + u[Lx_index + (j-1)*Nx] - 3*u[Lx_index + j*Nx]);
                 }
@@ -194,41 +199,41 @@ void ReactionDiffusion::TimeIntegrate() {
                 
                     // Along same column j=Ny-1 (3 below)
                     // Corner (0, Ly) (i=0, j=Ny-1) Ly_index = Nx*(Ny-1)
-                #pragma omp section
+             //   #pragma omp section
                 u_next[Ly_index] = u[Ly_index] + u_grad_coef*(u[Ly_index + 1] + u[Ly_index - Nx] - 2*u[Ly_index]);
                  
  
                 // Along (y==Ly) (0<i<Nx, j=Ny-1)
-                #pragma omp section
+             //   #pragma omp section
                 for (int i = 1; i < (Nx-1); i++) {
                     u_next[i + Ly_index] = u[i + Ly_index] + u_grad_coef*(u[i+1 + Ly_index] + u[i-1 + Ly_index] + u[i - Nx + Ly_index] - 3*u[i + Ly_index]);
                 }
               
                     // Corner (Lx, Ly) (i=Nx-1, j=Ny-1)
-                #pragma omp section
+             //   #pragma omp section
                 u_next[Lx_index + Ly_index] = u[Lx_index + Ly_index] + u_grad_coef*(u[Lx_index + Ly_index - 1] + u[Lx_index + Ly_index - Nx] - 2*u[Lx_index + Ly_index]);
 
                 // V !!!!!!!!!!!!
                     // Along same column j=0 (3 below)
                     // Corner (0, 0) (i=0, j=0)
-                #pragma omp section
+             //   #pragma omp section
                 v_next[0] = v[0] + v_grad_coef * (v[1] + v[Nx] - 2*v[0]);
                  
 
                 // Along (y==0) (0<i<Nx, j=0)
-                #pragma omp section
+             //   #pragma omp section
                 for (int i = 1; i < (Nx-1); i++) {
                     v_next[i] = v[i] + v_grad_coef*(v[i+1] + v[i-1] + v[i + Nx] - 3*v[i]);
                 }
                 
                   
                     // Corner (Lx, 0) (i=Nx-1, j=0) Lx_index = (Nx-1)
-                #pragma omp section
+              //  #pragma omp section
                 v_next[Lx_index] = v[Lx_index] + v_grad_coef*(v[Lx_index - 1] + v[Lx_index + Nx] - 2*v[Lx_index]);
                 
           
                 // Along (x==Lx) (i=Nx-1, 0<j<Ny-1)
-                #pragma omp section
+              //  #pragma omp section
                 for (int j = 1; j < (Ny-1); j++) {
                     v_next[Lx_index + j*Nx] = v[Lx_index + j*Nx] + v_grad_coef*(v[Lx_index - 1 + j*Nx] + v[Lx_index + (j+1)*Nx] + v[Lx_index + (j-1)*Nx] - 3*v[Lx_index + j*Nx]);
                 }
@@ -236,7 +241,9 @@ void ReactionDiffusion::TimeIntegrate() {
                  
                  
                 // Central points (0<i<Nx-1, 0<j<Ny-1)
-                #pragma omp section
+             //   #pragma omp section
+                //#pragma omp parallel for 
+                #pragma omp for
                 for (int j = 1; j < (Ny-1); ++j) {
                     for (int i = 1; i < (Nx-1); ++i) {
                         v_next[i+j*Nx] = v[i+j*Nx] + v_grad_coef*(v[i+1 + j*Nx] + v[i-1 + j*Nx] + v[i+(j+1)*Nx] + v[i+(j-1)*Nx] - 4*v[i+j*Nx]);
@@ -245,26 +252,26 @@ void ReactionDiffusion::TimeIntegrate() {
 
 
                 // Along (x==0) (i=0, 0<j<Ny-1)
-                #pragma omp section
+            //   #pragma omp section
                 for (int j = 1; j < (Ny-1); j++) {
                     v_next[j*Nx] = v[j*Nx] + v_grad_coef*(v[1 + j*Nx] + v[(j+1)*Nx] + v[(j-1)*Nx] - 3*v[j*Nx]);
                 }
                 
                 // Along same column j=Ny-1 (3 below)
                 // Corner (0, Ly) (i=0, j=Ny-1) Ly_index = Nx*(Ny-1)
-                #pragma omp section
+             //   #pragma omp section
                 v_next[Ly_index] = v[Ly_index] + v_grad_coef*(u[Ly_index + 1] + v[Ly_index - Nx] - 2*v[Ly_index]);
                  
        
                 // Along (y==Ly) (0<i<Nx, j=Ny-1)
-                #pragma omp section
+             //   #pragma omp section
                 for (int i = 1; i < (Nx-1); i++) {
                     v_next[i + Ly_index] = v[i+Ly_index] + v_grad_coef*(v[i+1 + Ly_index] + v[i-1 + Ly_index] + v[i - Nx + Ly_index] - 3*v[i + Ly_index]);
                 }
             
                 
                 // Corner (Lx, Ly) (i=Nx-1, j=Ny-1)
-                #pragma omp section
+             //   #pragma omp section
                 v_next[Lx_index + Ly_index] = v[Lx_index + Ly_index] + v_grad_coef*(v[Lx_index + Ly_index - 1] + v[Lx_index + Ly_index - Nx] - 2*v[Lx_index + Ly_index]);
                 
                         
@@ -276,20 +283,23 @@ void ReactionDiffusion::TimeIntegrate() {
         //            for (int i = 0; i < Nx; ++i) {
 
 //                #pragma omp section
-//                if (omp_get_thread_num() == 0) {
-//                    if (timestep % 10000 == 0) { 
-//                        cout << "Timestep " << timestep << endl;
-//                    }
-//                }
+                if (omp_get_thread_num() == 0) {
+                    if (timestep % 10000 == 0) { 
+                        cout << "Time-step: " << right << setw(6) << timestep 
+                             << "/" << nr_timesteps 
+                             << " (" << 100*timestep/nr_timesteps << "%)" << endl;
+                    }
+                }
                 
                 // dont copy entire array, do pointer arithmetic instead!!!!!!!!!!!
-//                    temp = u;
-//                    u = u_1;
-//                    u_1 = temp;
+//                    //temp = u;
+//                    //u = u_1;
+//                    //u_1 = temp;
 
-                    #pragma omp wait
+               //     #pragma omp wait
                     
-                    #pragma omp section
+
+                    #pragma omp for
                     for (int k = 0; k < Nx*Ny; ++k) {
                         //#pragma omp task firstprivate(k)
                        // {
@@ -299,21 +309,28 @@ void ReactionDiffusion::TimeIntegrate() {
                             u_next[k] = u_next[k] + dt_eps * u[k] * (1.0 - u[k]) * (u[k] - v[k] * recip_a - b_over_a);
                             v_next[k] = v_next[k] + dt * (u[k] * u[k] * u[k] - v[k]);
                         
-                            u[k] = u_next[k];
-                            v[k] = v_next[k];
+//                            u[k] = u_next[k];
+//                            v[k] = v_next[k];
                       //  }
 
                     }
+                    
+                    // MAKE COMMENTS EXPLAINING THIS LOGIC!!!!!!!!!!!!!!!!!!!!!!!
+                    dummy_ptr = u;          // Dummy now points to 'u'
+                    u = u_next;             // 'u' now points to what resulted from these calculations
+                    u_next = dummy_ptr;     // 'u_next' now points to the previous 
+                    
+                    dummy_ptr = v;
+                    v = v_next;
+                    v_next = dummy_ptr;
                 
-            } // End of sections (there's an implicit barrier)
+           // } // End of sections (there's an implicit barrier)
             
         //    } // End of single
-//        
-//        }    // End of parallel
-        }   // End of parallel
+       }
+
     } // End time-integrate
-    // delete[] dummy;
-    cout << "Finished solving PDE (from t_i = 0 to t_f = T)." << endl;
+    cout << "\nFinished solving PDE (from t_i = 0 to t_f = T).\n" << endl;
     
 }
 
@@ -343,7 +360,7 @@ void ReactionDiffusion::Terminate() {
     ofstream vOut("output.txt", ios::out | ios::trunc);
     
     if (vOut.is_open()) {
-        cout << "File opened successfully" << endl;
+        cout << "File opened successfully." << endl;
         
         // Writing solution row-by-row (x y u v)
         // Not super efficient since vectors are stored column-wise. 
@@ -364,6 +381,7 @@ void ReactionDiffusion::Terminate() {
         cout << "Did not open vOut successfully!" << endl;
     }
     vOut.close();
+    cout << "Finished writing to file." << endl;
         
     // De-allocating memory
     delete[] u;

@@ -39,6 +39,8 @@ class ReactionDiffusion {
         double* v;
         double* u_next;
         double* v_next;
+        double* dummy_ptr;
+        
         int Ly_index;
         int Lx_index;
         

@@ -21,15 +21,18 @@ int main(int argc, char* argv[]) {
     // Getting number of threads (as set in OMP_NUM_THREADS env variable) and
     // checking that satisfies the requirement set in Section 2.4 of the handout.
     int max_nr_threads = omp_get_max_threads();
-    if  ( (max_nr_threads != 1) && (max_nr_threads != 2) && (max_nr_threads != 4) &&
-          (max_nr_threads != 8) && (max_nr_threads != 16) && (max_nr_threads != 32) &&
-          (max_nr_threads != 64) ) {
+    if  ( (max_nr_threads != 1) && (max_nr_threads != 4) && (max_nr_threads != 9) &&
+          (max_nr_threads != 16) && (max_nr_threads != 25) && (max_nr_threads != 36) &&
+          (max_nr_threads != 49) && (max_nr_threads != 64) ) {
           
             cout << "Error: Program is being run with " << max_nr_threads << " threads." << endl;
-            cout << "This program should only be run with 1, 2, 4, 8, 16, 32 or 64 threads." << endl;
+            cout << "This program should only be run with 1, 4, 9, 16, 25, 36, 49 or 64 threads." << endl;
             cout << "Please change the number of threads by altering the 'OMP_NUM_THREADS' env variable." << endl;
             return 0;
         }
+    else {
+        cout << "Running program with " << max_nr_threads << " thread(s)." << endl;
+    }
     
     // Specify the options we want to make available to the user
     po::options_description opts("Allowed options");
