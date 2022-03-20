@@ -1,6 +1,8 @@
 #ifndef REACT_DIFF
 #define REACT_DIFF
 
+#include <omp.h>
+
 /**
  * @class ReactionDiffusion
  * @author Luis Marques
@@ -38,6 +40,11 @@ class ReactionDiffusion {
         double* v;
         double* u_prev;
         double* v_prev;
+        int Ly_index;
+        int Lx_index;
+        //double* u_next;
+        //double* v_next;
+        
         
     // Methods are public as these must be accessed outside.
     public:
@@ -47,8 +54,13 @@ class ReactionDiffusion {
                            const double& arg_mu1, const double& arg_mu2,
                            const double& arg_eps);
 
+        /// Sets the initial state of the u,v solutions field. 
         void SetInitialConditions();
+        
+        /// Solves the problem using time integration.
         void TimeIntegrate();
+        
+        /// Saves
         void Terminate();
         
 };

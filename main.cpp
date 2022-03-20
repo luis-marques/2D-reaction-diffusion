@@ -28,15 +28,15 @@ int main(int argc, char* argv[]) {
                  "Number of grid points in x. (int)")
         ("Ny",  po::value<int>()->default_value(101),
                  "Number of grid points in y. (int)")
-        ("a",  po::value<double>()->default_value(0.75),
+        ("a",  po::value<double>()->default_value(0.75, "0.75"),
                  "Value of parameter a. (double)")
-        ("b",  po::value<double>()->default_value(0.06),
+        ("b",  po::value<double>()->default_value(0.06, "0.06"),
                  "Value of parameter b. (double)")
-        ("mu1",  po::value<double>()->default_value(5.0),
+        ("mu1",  po::value<double>()->default_value(5.0, "5.0"),
                  "Value of parameter mu1. (double)")
-        ("mu2",  po::value<double>()->default_value(0.0),
+        ("mu2",  po::value<double>()->default_value(0.0, "0.0"),
                  "Value of parameter mu2. (double)")
-        ("eps",  po::value<double>()->default_value(50.0),
+        ("eps",  po::value<double>()->default_value(50.0, "50.0"),
                  "Value of parameter epsilon. (double)")
         ("help", "Prints the help message.")
 
