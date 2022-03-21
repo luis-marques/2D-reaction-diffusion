@@ -7,8 +7,10 @@ DEBUG		?= 0
 ifeq ($(DEBUG), 1)
 	CXXFLAGS	= -fopenmp -std=c++11 -Wall -Wshadow -pedantic -O0 -g
 else
-	CXXFLAGS	= -fopenmp -std=c++11 -O4 -march=native
+	CXXFLAGS	= -fopenmp -std=c++11 -O4 -g
 endif
+
+# -march=native
 
 CC			= g++
 LDLIBS		= -lboost_program_options
