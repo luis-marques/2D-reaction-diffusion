@@ -18,6 +18,10 @@ namespace po = boost::program_options;
 
 int main(int argc, char* argv[]) {
     
+    // 1 <= c <= 8 ==> Valid c = {1, 2,  3,  4,  5,  6,  7,   8}
+    // C = c^2     ==> Valid C = {1, 4,  9, 16, 25, 36, 49,  64} (number of Cores)
+    // T = C * 2   ==> Valid T = {2, 8, 16, 32, 50, 72, 98, 128} (number of threads = number of Cores * 2)
+    
     // Getting number of threads (as set in OMP_NUM_THREADS env variable) and
     // checking that satisfies the requirement set in Section 2.4 of the handout.
     int max_nr_threads = omp_get_max_threads();
