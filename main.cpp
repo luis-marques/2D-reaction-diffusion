@@ -104,23 +104,23 @@ int main(int argc, char* argv[]) {
  
  //{
     // Initializing Reaction Diffusion class
-    //ReactionDiffusion react_diff;
-    ReactionDiffusion* react_diff = new ReactionDiffusion();
+    ReactionDiffusion react_diff;
+    //ReactionDiffusion* react_diff = new ReactionDiffusion();
     
     // Setting the problem parameters as specific in the command-line
-    //react_diff.SetParameters(dt, T, Nx, Ny, a, b, mu1, mu2, eps);
+    react_diff.SetParameters(dt, T, Nx, Ny, a, b, mu1, mu2, eps);
     
-    react_diff->SetParameters(dt, T, Nx, Ny, a, b, mu1, mu2, eps);
-    react_diff->SetInitialConditions();
-    react_diff->TimeIntegrate();
-    react_diff->Terminate();
-    //react_diff.SetInitialConditions();
+    //react_diff->SetParameters(dt, T, Nx, Ny, a, b, mu1, mu2, eps);
+    //react_diff->SetInitialConditions();
+    //react_diff->TimeIntegrate();
+    //react_diff->Terminate();
+    react_diff.SetInitialConditions();
     
-    delete react_diff;
-    //react_diff.TimeIntegrate();
+    //delete react_diff;
+    react_diff.TimeIntegrate();
     
 
-    //react_diff.Terminate();
+    react_diff.Terminate();
  //}
     return 0;
 }

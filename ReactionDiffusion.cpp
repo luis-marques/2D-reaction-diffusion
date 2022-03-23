@@ -158,7 +158,27 @@ void ReactionDiffusion::TimeIntegrate() {
             u_next[Lx_index + Ly_index] = u[Lx_index + Ly_index] + u_grad_coef*(u[Lx_index + Ly_index - 1] + u[Lx_index + Ly_index - Nx] - 2*u[Lx_index + Ly_index]) 
                                         + dt_eps * u[Lx_index+Ly_index] * (1.0 - u[Lx_index+Ly_index]) * (u[Lx_index+Ly_index] - v[Lx_index+Ly_index] * recip_a - b_over_a);
 
-           
+            #pragma omp for nowait
+            for (int i = 1; i < (Nx-1); i++) {
+//                
+//                // Along (y==0) (0<i<Nx, j=0)
+//                v_next[i] = v[i] + v_grad_coef*(v[i+1] + v[i-1] + v[i + Nx] - 3*v[i])
+//                          + dt * (u[i] * u[i] * u[i] - v[i]);
+//                          
+//                // Along (y==Ly) (0<i<Nx, j=Ny-1)
+//                v_next[i + Ly_index] = v[i+Ly_index] + v_grad_coef*(v[i+1 + Ly_index] + v[i-1 + Ly_index] + v[i - Nx + Ly_index] - 3*v[i + Ly_index])
+//                                     + dt * (u[i+Ly_index] * u[i+Ly_index] * u[i+Ly_index] - v[i+Ly_index]);
+//                                     
+                                     
+                // Along (y==0) (0<i<Nx, j=0)
+                u_next[i] = u[i] + u_grad_coef*(u[i+1] + u[i-1] + u[i + Nx] - 3*u[i]) 
+                          + dt_eps * u[i] * (1.0 - u[i]) * (u[i] - v[i] * recip_a - b_over_a);
+                          
+                          
+                // Along (y==Ly) (0<i<Nx, j=Ny-1)
+                u_next[i + Ly_index] = u[i + Ly_index] + u_grad_coef*(u[i+1 + Ly_index] + u[i-1 + Ly_index] + u[i - Nx + Ly_index] - 3*u[i + Ly_index])
+                                 + dt_eps * u[i+Ly_index] * (1.0 - u[i+Ly_index]) * (u[i+Ly_index] - v[i+Ly_index] * recip_a - b_over_a);
+            }
             
 
             // Central points (0<i<Nx-1, 0<j<Ny-1)
@@ -279,27 +299,6 @@ void ReactionDiffusion::TimeIntegrate() {
 //                                 + dt_eps * u[i+Ly_index] * (1.0 - u[i+Ly_index]) * (u[i+Ly_index] - v[i+Ly_index] * recip_a - b_over_a);
             }
             
-            #pragma omp for nowait
-            for (int i = 1; i < (Nx-1); i++) {
-//                
-//                // Along (y==0) (0<i<Nx, j=0)
-//                v_next[i] = v[i] + v_grad_coef*(v[i+1] + v[i-1] + v[i + Nx] - 3*v[i])
-//                          + dt * (u[i] * u[i] * u[i] - v[i]);
-//                          
-//                // Along (y==Ly) (0<i<Nx, j=Ny-1)
-//                v_next[i + Ly_index] = v[i+Ly_index] + v_grad_coef*(v[i+1 + Ly_index] + v[i-1 + Ly_index] + v[i - Nx + Ly_index] - 3*v[i + Ly_index])
-//                                     + dt * (u[i+Ly_index] * u[i+Ly_index] * u[i+Ly_index] - v[i+Ly_index]);
-//                                     
-                                     
-                // Along (y==0) (0<i<Nx, j=0)
-                u_next[i] = u[i] + u_grad_coef*(u[i+1] + u[i-1] + u[i + Nx] - 3*u[i]) 
-                          + dt_eps * u[i] * (1.0 - u[i]) * (u[i] - v[i] * recip_a - b_over_a);
-                          
-                          
-                // Along (y==Ly) (0<i<Nx, j=Ny-1)
-                u_next[i + Ly_index] = u[i + Ly_index] + u_grad_coef*(u[i+1 + Ly_index] + u[i-1 + Ly_index] + u[i - Nx + Ly_index] - 3*u[i + Ly_index])
-                                 + dt_eps * u[i+Ly_index] * (1.0 - u[i+Ly_index]) * (u[i+Ly_index] - v[i+Ly_index] * recip_a - b_over_a);
-            }
         
         }       // End of pragma parallel region
         
