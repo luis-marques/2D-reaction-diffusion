@@ -1,16 +1,16 @@
-/* Program: This program numerically solves a 2D reaction-diffusion problem
- * using parallel computing. 
+/* Purpose: This program numerically solves a 2D reaction-diffusion problem
+ * (Barkley model) using central finite-differences and Explicit (Forward)
+ * Euler. It supports parallel programming via the shared-memory paradigm, which
+ * is implemented using the OpenMP API. 
  * 
- * Tested on: Typhoon (& Spitfire), Debian GNU/Linux 11 (bullseye).
+ * Tested on: Spitfire (& Typhoon), Debian GNU/Linux 11 (bullseye).
  * 
- * Author: CID-01715222.
+ * Author: CID 01715222.
  */
 
 #include <iostream>
-
 #include <boost/program_options.hpp>
 #include <omp.h>
-
 #include "ReactionDiffusion.h"
 
 // To improve code readibility
@@ -21,34 +21,39 @@ namespace po = boost::program_options;
 int main(int argc, char* argv[]) {
     
     // 1 <= c <= 8 ==> Valid c = {1, 2,  3,  4,  5,  6,  7,   8}
-    // C = c^2     ==> Valid C = {1, 4,  9, 16, 25, 36, 49,  64} (number of Cores)
-    // T = C * 2   ==> Valid T = {2, 8, 16, 32, 50, 72, 98, 128} (number of threads = number of Cores * 2)
+    // C = c^2     ==> Valid C = {1, 4,  9, 16, 25, 36, 49,  64} (Number of cores to be supported)
+    // While one could constrain the number of threads to solely those present in the C set above,
+    // it was opted instead to simply ensure that the number of threads would not exceed 64. While for testing,
+    // only {1, 4, 9, 16, 25, 36, 49, 64} threads were used, technically if running with e.g. 30 threads, the 
+    // program would be necessarily running in less than 64 cores. 
+    // Note: The 4 commented-out lines bellow implement the case where only a number of threads present in the
+    // C set is valid.
     
-    // Getting number of threads (as set in OMP_NUM_THREADS env variable) and
-    // checking that satisfies the requirement set in Section 2.4 of the handout.
+    // Getting the number of threads, as set in OMP_NUM_THREADS env variable.
     int max_nr_threads = omp_get_max_threads();
-    if  ( (max_nr_threads != 1) && (max_nr_threads != 4) && (max_nr_threads != 9) &&
-          (max_nr_threads != 16) && (max_nr_threads != 25) && (max_nr_threads != 36) &&
-          (max_nr_threads != 49) && (max_nr_threads != 64) ) {
-          
+    
+//    if  ( (max_nr_threads != 1) && (max_nr_threads != 4) && (max_nr_threads != 9) &&
+//          (max_nr_threads != 16) && (max_nr_threads != 25) && (max_nr_threads != 36) &&
+//          (max_nr_threads != 49) && (max_nr_threads != 64) ) {
+    if (max_nr_threads > 64) {
             cout << "Error: Program is being run with " << max_nr_threads << " threads." << endl;
-            cout << "This program should only be run with 1, 4, 9, 16, 25, 36, 49 or 64 threads." << endl;
+//            cout << "This program should only be run with 1, 4, 9, 16, 25, 36, 49 or 64 threads." << endl;
+            cout << "The program must be run with 64 or less threads." << endl;
             cout << "Please change the number of threads by altering the 'OMP_NUM_THREADS' env variable." << endl;
             return 0;
-        }
-    else {
+    }
+    else {  //
         cout << "Running program with " << max_nr_threads << " thread(s)." << endl;
     }
     
-    // Specify the options we want to make available to the user
+    // Specifying the options we want to make available to the user.
     po::options_description opts("Allowed options");
-    // dt and T are only required parameters since they do not appear in Table 1.
     opts.add_options()
-        ("dt", po::value<double>()->required(),
-                 "Time-step to use. (double)")
-        ("T",  po::value<int>()->required(),
-                 "Total integration time. (int)")
-        ("Nx",  po::value<int>()->default_value(101),
+        ("dt", po::value<double>()->required(),             // dt and T are the only required arguments
+                 "Time-step to use. (double)")              // since these are the only parameters not
+        ("T",  po::value<int>()->required(),                // present in Table 2 of the handout.
+                 "Total integration time. (int)")           // for all other arguments default values are
+        ("Nx",  po::value<int>()->default_value(101),       // those specified in Table 2.
                  "Number of grid points in x. (int)")
         ("Ny",  po::value<int>()->default_value(101),
                  "Number of grid points in y. (int)")
@@ -66,17 +71,15 @@ int main(int argc, char* argv[]) {
 
         ;
 
-    // Tell Boost to parse the command-line arguments using the list of
-    // possible options and generate a map (vm) containing the options and
-    // values actually specified by the user.
+    // Parsing command-line arguments and generating map containg the options and values.
     po::variables_map vm;
     
-    // Handles errors with the passed arguments and provides helpful error messages.
+    // Handling errors with the passed arguments and provides helpful error messages.
     try {
         po::store(po::parse_command_line(argc, argv, opts), vm);
         
         // If the user asked for help, or no arguments were supplied, provide
-        // help message and lists the possible arguments.
+        // help message and list the possible arguments.
         if (vm.count("help") || argc == 1) {
             cout << "Please provide a value for all the required options (optional options are indicated with round brackets)." << endl
                  << opts << endl;
@@ -91,7 +94,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     
-    // Extracts values given to parameters using the appropriate datatype.
+    // Extracts the parameter values given to varibles using the appropriate datatype.
     const double dt = vm["dt"].as<double>();
     const int T = vm["T"].as<int>();
     const int Nx = vm["Nx"].as<int>();
@@ -102,25 +105,21 @@ int main(int argc, char* argv[]) {
     const double mu2 = vm["mu2"].as<double>();
     const double eps = vm["eps"].as<double>();
  
- //{
+
     // Initializing Reaction Diffusion class
     ReactionDiffusion react_diff;
-    //ReactionDiffusion* react_diff = new ReactionDiffusion();
     
-    // Setting the problem parameters as specific in the command-line
+    // Passing the parsed parameter values to the class.
     react_diff.SetParameters(dt, T, Nx, Ny, a, b, mu1, mu2, eps);
     
-    //react_diff->SetParameters(dt, T, Nx, Ny, a, b, mu1, mu2, eps);
-    //react_diff->SetInitialConditions();
-    //react_diff->TimeIntegrate();
-    //react_diff->Terminate();
+    // Setting the initial conditions of the 'u','v' solution fields.
     react_diff.SetInitialConditions();
     
-    //delete react_diff;
+    // Perform time-integration from t=0 to t=T with timestep = dt.
     react_diff.TimeIntegrate();
     
+    // Saving result of simulation to file called 'output.txt'.
+    react_diff.SaveToFile();
 
-    react_diff.Terminate();
- //}
     return 0;
 }
