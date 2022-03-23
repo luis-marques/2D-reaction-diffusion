@@ -1,5 +1,5 @@
 # The "DEBUG" variable is to facilitate changing between "debug"
-# and "release" builds of the code. The first containts debugging symbols,
+# and "release" builds of the code. The first contains debugging symbols,
 # compiler flags to provide warnings and is compiled without any optimizations.
 # The second is the default build of the code and contains optimizations flags.
 # To compile the "debug" build run: "$ make DEBUG=1".
@@ -18,43 +18,46 @@ HDRS 			= ReactionDiffusion.h
 DOXY 			= doxygen
 DOXYFLAGS		= Doxyfile
 
-# Command-line arguments providing parameters of the 4 test cases
+# Parameters of the 4 test cases specified in handout.
 TEST1_PARAMS 	= --dt 0.001 --T 100 --Nx 101 --Ny 101 --a 0.75 --b 0.06 --eps 50.0 --mu1 5.0 --mu2 0.0
 TEST2_PARAMS 	= --dt 0.001 --T 100 --Nx 251 --Ny 251 --a 0.75 --b 0.06 --eps 13.0 --mu1 5.0 --mu2 0.0
 TEST3_PARAMS 	= --dt 0.001 --T 100 --Nx 101 --Ny 101 --a 0.5 --b 0.1 --eps 50.0 --mu1 5.0 --mu2 0.0
 TEST4_PARAMS 	= --dt 0.001 --T 100 --Nx 151 --Ny 81 --a 0.75 --b 0.0001 --eps 12.5 --mu1 1.0 --mu2 0.01
 
-# Setting the "default" target
+# Setting the "default" target.
 default: all
 all: $(TARGET) doc
 
 $(TARGET): $(TARGET).o ReactionDiffusion.o
 
-# Header file change requires re-compilation (both .cpps include the header file)
+# A change in the header file requires re-compilation 
+# (done as both .cpp include the header file).
 %.o: %.cpp $(HDRS)
 
-# These make targets don't create new files but rather run commands
-.PHONY: clean run doc test1 test2 test3 test4 debug
+# These make targets don't create new files but rather run commands.
+.PHONY: clean doc test1 test2 test3 test4
 
-run: $(TARGET)
-	./$(TARGET) --dt 0.001 --T 100
-
+# Cleans working directory.
 clean:
 	rm -f $(TARGET) *.o
 	rm -rf html
 	rm -rf latex
 
+# Produces documentation via doxygen.
 doc: *.cpp
 	$(DOXY) $(DOXYFILE)
 
+# Providing commands to run the different tests (i.e. after compilation,
+# "$ make test1" runs test1 and so on). Note how the tests are executed
+# in serial (#threads = 1), as specified in the handout.
 test1: $(TARGET)
-	./$(TARGET) $(TEST1_PARAMS)
+	export OMP_NUM_THREADS=1; ./$(TARGET) $(TEST1_PARAMS)
 
 test2: $(TARGET)
-	./$(TARGET) $(TEST2_PARAMS)
+	export OMP_NUM_THREADS=1; ./$(TARGET) $(TEST2_PARAMS)
 	
 test3: $(TARGET)
-	./$(TARGET) $(TEST3_PARAMS)
+	export OMP_NUM_THREADS=1; ./$(TARGET) $(TEST3_PARAMS)
 	
 test4: $(TARGET)
-	./$(TARGET) $(TEST4_PARAMS)
+	export OMP_NUM_THREADS=1; ./$(TARGET) $(TEST4_PARAMS)

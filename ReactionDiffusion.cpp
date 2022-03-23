@@ -1,16 +1,15 @@
-#include "ReactionDiffusion.h"
-
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-#include <stdio.h>
+#include "ReactionDiffusion.h"
 
 using namespace std;
 
 /**
  * @brief Takes in the command-line arguments as parsed by boost_program_options and stores
  * their values in the class members. Allocates memory to solutions fields. Pre-calculates any
- * variables that will be repeatedly used in time integration.
+ * variables that will be repeatedly used in time integration. Calculates number of timesteps
+ * required to perform the desired time integration.
  * @param arg_dt Integration time-step.
  * @param arg_T Total integration time.
  * @param arg_Nx Number of grid-points/nodes along x direction.   
@@ -30,15 +29,15 @@ void ReactionDiffusion::SetParameters(
                         
                         
         // Storing arguments in class variables.
-        dt  = arg_dt;
-        T   = arg_T;
-        Nx  = arg_Nx;
-        Ny  = arg_Ny;
-        a   = arg_a;
-        b   = arg_b;
-        mu1 = arg_mu1;
-        mu2 = arg_mu2;
-        eps = arg_eps;
+        dt          = arg_dt;
+        T           = arg_T;
+        Nx          = arg_Nx;
+        Ny          = arg_Ny;
+        a           = arg_a;
+        b           = arg_b;
+        mu1         = arg_mu1;
+        mu2         = arg_mu2;
+        eps         = arg_eps;
         
         // Pre-computing helpful variables, as specified in header file.
         recip_a     = 1.0 / a; 
@@ -51,15 +50,18 @@ void ReactionDiffusion::SetParameters(
         Ly_index    = Nx * (Ny-1);
         
         // Allocating memomry for the solution fields.
-        u = new double[Nx*Ny];
-        v = new double[Nx*Ny];
-        u_next = new double[Nx*Ny];
-        v_next = new double[Nx*Ny];
+        u           = new double[Nx*Ny];
+        v           = new double[Nx*Ny];
+        u_next      = new double[Nx*Ny];
+        v_next      = new double[Nx*Ny];
         
 
-        // Add check in case T is not properly divisible by dt (check remainder)!!!!!!!
+        // Since we are technically performing a division between an int T and a double dt
+        // could be more careful/robust to account for the cases where T is not divisible
+        // by dt. However, in the handout it is taken that T=100 and dt=0.001 all the time,
+        // so this never becomes a problem
         nr_timesteps = T / dt;
-        cout << "nr_timesteps = " << nr_timesteps << "; T = " << T << "; dt = " << dt << endl; 
+        
         
         // Printing values of all the parameters to the terminal.
         cout << endl;
@@ -78,19 +80,21 @@ void ReactionDiffusion::SetParameters(
 }
 
 /**
- * @brief Populates the u,v arrays with their initial conditions. These are stores in
+ * @brief Populates the 'u','v' arrays with their initial conditions. These are stored in
  * column-major fomat.
  */
 void ReactionDiffusion::SetInitialConditions() {
     
-        
-    // when u allocate on heap others are 0 automatically
-    
-    // Data 
-    for (int i = 0; i < Nx; ++i) {
-        for (int j = 0; j < Ny; ++j) {
+    // Since this is only called once, order of loops is negligble for performance.
+    // Nevertheless, for column-major matrices, it is best to have the inner loop be over
+    // the rows (i.e. make the row index be the fastest changing index) as this way we
+    // exploit cache-locality. 
+    // Throughtout the code, 'i' is used for the row index, 'j' for the column index, 
+    // 'Nx' is the number of rows and 'Ny' the number of columns.
+    for (int j = 0; j < Ny; ++j) {    
+        for (int i = 0; i < Nx; ++i) {
             
-            // If y < Ly/2 (note that Ly = (Ny-1)*dy, where we are taking dy=1.
+            // If y > Ly/2 (note that Ly = (Ny-1)*dy, where we are taking dy=1).
             if (j > (Ny-1)/2.0) {
                 u[i + j*Nx] = 1.0;
             }
@@ -98,7 +102,7 @@ void ReactionDiffusion::SetInitialConditions() {
                 u[i + j*Nx] = 0.0;
             } 
 
-            // If x < Lx/2 (note that Lx = (Nx-1)*dx, where we are taking dx=1.
+            // If x < Lx/2 (note that Lx = (Nx-1)*dx, where we are taking dx=1).
             if (i < (Nx-1)/2.0) {
                 v[i + j*Nx] = half_a;
             }
@@ -113,9 +117,7 @@ void ReactionDiffusion::SetInitialConditions() {
 
 /**
  * @brief Performs integration over time using the Explicit (Forward)
- * Euler numerical scheme.
- * 
- * A discrete update of the u,v arrays is run \f$ n=T/dt \f$ times
+ * Euler numerical scheme. A discrete update of the 'u','v' arrays is run \f$ n=T/dt \f$ times
  * where \f$ dt \f$ is timestep used for integration and
  * \f$ T \f$ the total integration time.
  */
@@ -123,15 +125,22 @@ void ReactionDiffusion::TimeIntegrate() {
     cout << "Starting numerical solving of PDE.\n" << endl;
     
     // Each iteration of this for-loop performs one update of the 'u','v' solution fields.
-    // i.e. 
+    // i.e. a single iteration updates u^{n} -> u^{n+1} and v^{n} -> v^{n+1}.
     for (int timestep = 0; timestep < nr_timesteps; ++timestep) {
         
         // Single omp parallel, so there is only one forking/joining of threads per iteration.
         #pragma omp parallel
         { 
             
-            // We are calculating first the update to the 'u' solution field and only later the update to the 'v' solution field
-            // to try to exploit cache locality.
+            // We are calculating firstly the update to the 'u' solution field and only
+            // later the update to the 'v' solution field. This is done to try to exploit cache-locality.
+            // Even though this is not perfect as for u_{i,j} we use v_{i,j} in the reaction term (and 
+            // likewise for v_{i,j}), doing it this way provides performance improvements (especially
+            // in serial but also in parallel).
+            
+            
+            // Using single nowait for the corners so only a single thread executes them, and while it is doing so
+            // the other threads move forwards in the code.
             
             // Corner (0, 0) (i=0, j=0)
             #pragma omp single nowait
@@ -153,19 +162,23 @@ void ReactionDiffusion::TimeIntegrate() {
             u_next[Lx_index + Ly_index] = u[Lx_index + Ly_index] + u_grad_coef*(u[Lx_index + Ly_index - 1] + u[Lx_index + Ly_index - Nx] - 2*u[Lx_index + Ly_index]) 
                                         + dt_eps * u[Lx_index+Ly_index] * (1.0 - u[Lx_index+Ly_index]) * (u[Lx_index+Ly_index] - v[Lx_index+Ly_index] * recip_a - b_over_a);
             
-            // Edge BCs for fixed v values.
+            // Using nowait so there's no implicit synchronization/barrier at the end of the loop (would degrade performance).
+            
+            // Edge BCs for fixed y values.
             #pragma omp for nowait
             for (int i = 1; i < (Nx-1); i++) {
-                // Along (y==0) (0<i<Nx, j=0)
+                
+                // Along (y==0) (0<i<Nx-1, j=0)
                 u_next[i] = u[i] + u_grad_coef*(u[i+1] + u[i-1] + u[i + Nx] - 3*u[i]) 
                           + dt_eps * u[i] * (1.0 - u[i]) * (u[i] - v[i] * recip_a - b_over_a);
                           
                           
-                // Along (y==Ly) (0<i<Nx, j=Ny-1)
+                // Along (y==Ly) (0<i<Nx-1, j=Ny-1)
                 u_next[i + Ly_index] = u[i + Ly_index] + u_grad_coef*(u[i+1 + Ly_index] + u[i-1 + Ly_index] + u[i - Nx + Ly_index] - 3*u[i + Ly_index])
                                  + dt_eps * u[i+Ly_index] * (1.0 - u[i+Ly_index]) * (u[i+Ly_index] - v[i+Ly_index] * recip_a - b_over_a);
             }
             
+            // Fastest changing index is the row-index so as to maximize the exploitation of cache-locality.
 
             // Central points (0<i<Nx-1, 0<j<Ny-1)
             #pragma omp for nowait 
@@ -181,11 +194,11 @@ void ReactionDiffusion::TimeIntegrate() {
             #pragma omp for nowait
             for (int j = 1; j < (Ny-1); j++) {
                 
-                // Along (x==0) (i=0, 1<j<Ny-1)
+                // Along (x==0) (i=0, 0<j<Ny-1)
                 u_next[j*Nx] = u[j*Nx] + u_grad_coef*(u[1 + j*Nx] + u[(j+1)*Nx] + u[(j-1)*Nx] - 3*u[j*Nx])
                              + dt_eps * u[j*Nx] * (1.0 - u[j*Nx]) * (u[j*Nx] - v[j*Nx] * recip_a - b_over_a);
                 
-                // Along (x==Lx) (i=Nx-1, 1<j<Ny-1)
+                // Along (x==Lx) (i=Nx-1, 0<j<Ny-1)
                 u_next[Lx_index + j*Nx] = u[Lx_index + j*Nx] + u_grad_coef*(u[Lx_index - 1 + j*Nx] + u[Lx_index + (j+1)*Nx] + u[Lx_index + (j-1)*Nx] - 3*u[Lx_index + j*Nx])
                                         + dt_eps * u[Lx_index + j*Nx] * (1.0 - u[Lx_index + j*Nx]) * (u[Lx_index + j*Nx] - v[Lx_index + j*Nx] * recip_a - b_over_a);
 
@@ -256,19 +269,25 @@ void ReactionDiffusion::TimeIntegrate() {
         
         }   // End of pragma parallel region (there is an implicit barrier)
         
-        // All the threads have finished running due to implicit barrier above, thus can now store the
-        // calculated u^{n+1} = u_next and v^{n+1} = v_next into 'u','v' and prepare for following time-step.
+        
+        // All the threads have finished running due to implicit barrier above (i.e. all the grid-points have been
+        // updated from timestep n to timestep n+1. Thus we can now store the calculated u^{n+1} = u_next
+        // and v^{n+1} = v_next into 'u','v' and prepare for following time-step.
+        // Note: we are also passing the 'old' 'u','v' into 'u_next' and 'v_next' but this is fine since
+        // when evaluating 'u_next' in the following time-step we will solely use the values of 'u' and not any
+        // values in 'u_next'.
         swap(u, u_next);
         swap(v, v_next);
         
         
         // Providing feedback to the user of how fast the program is running during execution.
-        // Has negligible performance impact.
+        // Has negligible performance impact so was left in.
         if (timestep % 10000 == 0) { 
             cout << "Time-step: " << right << setw(6) << timestep 
                  << "/" << nr_timesteps 
                  << " (" << right << setw(2) << 100*timestep/nr_timesteps << "%)" << endl;
         }
+        
               
     }   // End of time-loop (i.e. finished integrating over time).
     
@@ -278,22 +297,29 @@ void ReactionDiffusion::TimeIntegrate() {
 
 /**
  * @brief Responsible for saving results of numerical simulation to a text
- * file called 'output.txt'. Also deals with memory de-allocation and
- * other procedures that should be run at the end of the program execution.
+ * file called 'output.txt'.
  * 
  * To visualize the result of the simulation one can run the following commands:
+ * 
  * $ gnuplot
+ * 
  * $ set pm3d at st
+ * 
  * $ set view map
+ * 
  * $ set cbrange[0:1]
  * 
  * and then
+ * 
  * $ splot 'output.txt' using 1:2:3 w l palette
+ * 
  * to plot 'u' over the domain, or instead
+ * 
  * $ splot 'output.txt' using 1:2:4 w l palette
+ * 
  * to plot 'v' over the domain.
  * 
- * xrange[0:150] for last plot
+ * For the test4 use '$ xrange[0:150]' to account for the non-square domain.
  * 
  */
 void ReactionDiffusion::SaveToFile() {
@@ -331,7 +357,7 @@ void ReactionDiffusion::SaveToFile() {
 }
 
 /**
- * @brief Destructor de-allocates all dynamically assigned memory.
+ * @brief Performs clean up duties.
  */
 ReactionDiffusion::~ReactionDiffusion() {
         

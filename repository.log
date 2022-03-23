@@ -1,0 +1,271 @@
+commit f7b350c1142f7a7b417b133653cb809e57657e67
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Wed Mar 23 18:02:01 2022 +0000
+
+    Improved documentation.
+
+M	Doxyfile
+M	Makefile
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+M	main.cpp
+
+commit 2edcb154d3f214798aeb0e195cfe6d200883399f
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Wed Mar 23 12:23:37 2022 +0000
+
+    Final version. Only documentation/comments left.
+
+M	Makefile
+M	ReactionDiffusion.cpp
+
+commit 1fe84eb9c8a191271c442bb22f783d48e5437cc0
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Wed Mar 23 07:34:09 2022 +0000
+
+    Fastest version, using std::swap().
+
+M	ReactionDiffusion.cpp
+M	main.cpp
+
+commit 7ca03064c643a06590c95c8af26bd7c616d9c009
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Wed Mar 23 00:28:22 2022 +0000
+
+    Fixed range of test4 plot :(
+
+M	test4.png
+
+commit 5bb12696f6e91a39492e0d8ecc8808b7dab3c676
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Wed Mar 23 00:13:55 2022 +0000
+
+    Made destructor and exported images as .png.
+
+M	Makefile
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+M	main.cpp
+A	test1.png
+A	test2.png
+A	test3.png
+A	test4.png
+
+commit 97442309a665ac492b5a66620bf1b65d43b500c8
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Tue Mar 22 00:27:42 2022 +0000
+
+    Minute changes and fixed plot artefacts.
+
+M	Makefile
+M	ReactionDiffusion.cpp
+M	test1_solution_u.pdf
+M	test2_solution_u.pdf
+M	test3_solution_u.pdf
+M	test4_solution_u.pdf
+
+commit 094da4685e0a20dfb83ca0a15244dfa04f65cbe4
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Mon Mar 21 19:33:19 2022 +0000
+
+    Speed monotonically increasing up 64 threads.
+
+M	Makefile
+M	ReactionDiffusion.cpp
+M	test4_solution_u.pdf
+
+commit d3d61ce0bae057c839c0b16065df595a7b572c34
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Mon Mar 21 12:34:53 2022 +0000
+
+    Solution plots (report Sect 1).
+
+M	main.cpp
+A	test1_solution_u.pdf
+A	test2_solution_u.pdf
+A	test3_solution_u.pdf
+A	test4_solution_u.pdf
+
+commit 85e213014cbfac7546ee9acb95c9fbe2c8584eb6
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Mon Mar 21 00:23:26 2022 +0000
+
+    Massive performance increase on test2 from 1 to 32 cores (above it slows down).
+
+M	ReactionDiffusion.cpp
+
+commit 5a9211fe378df21bd3688e0f6f9ccdf6a3fdf0b8
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Sun Mar 20 21:37:14 2022 +0000
+
+    Typhoon serial test 1 - 1.8s. Only OpenMP from now on.
+
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+M	main.cpp
+
+commit 860ebb621f43cf2ce47301f421c3a35aa6e5bf39
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Sun Mar 20 18:44:33 2022 +0000
+
+    Start of parallel OpenMP.
+
+M	Makefile
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+M	main.cpp
+
+commit 002050e23535fb5fdf7dfd007e54ed7a41d3f47c
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Sun Mar 20 01:22:14 2022 +0000
+
+    Removed all conditional statements, separated u and v loops.
+
+M	ReactionDiffusion.cpp
+
+commit ee4d7dba7f6b0a35fd50fad52e9b2fd16b5e41d0
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Sun Mar 20 00:38:52 2022 +0000
+
+    Removing if-statements.
+
+M	Makefile
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+M	main.cpp
+
+commit 2be29824c0183797c76bbef717fbf754175b9670
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Fri Mar 18 23:46:15 2022 +0000
+
+    Boost proper error handling.
+
+M	ReactionDiffusion.h
+M	main.cpp
+
+commit 1e324032a9de6e71bb2032eb54080b5dd9a474a9
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Fri Mar 18 21:45:28 2022 +0000
+
+    Documented and refactored.
+
+M	.gitignore
+A	Doxyfile
+M	Makefile
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+M	main.cpp
+
+commit f212718545c12f63b2c7606da4671059d98bc164
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Thu Mar 17 23:45:13 2022 +0000
+
+    Various optimizations to for loop. Same test2 image as Dr. Cantwell
+
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+
+commit 2a580bff109490c52f08dd9fcdada5d81295adcb
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Thu Mar 17 22:11:14 2022 +0000
+
+    Optimized for loops: coefficients, inlining
+
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+
+commit 9887a4e49cbcef27feea2b26f608f06e108857dd
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Thu Mar 17 00:30:46 2022 +0000
+
+    For-loops currently faster, will use them from now on.
+
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+
+commit b1637cbeab7ca2a183247a52bf3dedc0c0f8a175
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Thu Mar 17 00:24:21 2022 +0000
+
+    Final version of BLAS attempt.
+
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+M	main.cpp
+
+commit 02c97edde378b157af76461c16301a6404af5f18
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Wed Mar 16 16:30:53 2022 +0000
+
+    Fixed output format (row) and initial conditions.
+
+M	Makefile
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+M	main.cpp
+
+commit d2a9fce8ead843cc4b801fbd07156e1ea856ea29
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Wed Mar 16 15:34:29 2022 +0000
+
+    Serial solver working with for-loops.
+
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+A	eps13_serial_forloops.pdf
+A	eps50_serial_forloops.pdf
+M	main.cpp
+
+commit 59f041b7c080897572deafca9030fa29e6cb1c39
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Tue Mar 15 20:14:33 2022 +0000
+
+    Output to file working. Tested with gnuplot
+
+M	.gitignore
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+M	main.cpp
+
+commit 54d37bad53110fd13fabd14820614af955c4af42
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Tue Mar 15 19:01:17 2022 +0000
+
+    Writting to file works sometimes, others throws malloc() error
+
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+M	main.cpp
+
+commit 1c62da4c903d98b40603a399651ff6aa22c62aef
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Tue Mar 15 17:15:38 2022 +0000
+
+    SetParameters working properly
+
+A	.gitignore
+M	Makefile
+M	ReactionDiffusion.cpp
+M	ReactionDiffusion.h
+M	main.cpp
+
+commit fd73a3c9cab39a6623f5bf5008cf764e0331aab7
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Sun Mar 13 22:57:30 2022 +0000
+
+    Started reading params from terminal
+
+M	Makefile
+A	ReactionDiffusion.cpp
+A	ReactionDiffusion.h
+A	coursework.project
+M	main.cpp
+
+commit 05c44d6a91bc794e8eef2020e7ba04f6df5b5709
+Author: Luis Marques <lf1119@ic.ac.uk>
+Date:   Sun Mar 13 22:11:07 2022 +0000
+
+    Initialized repo
+
+A	Makefile
+A	main.cpp
