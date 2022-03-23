@@ -33,16 +33,16 @@ class ReactionDiffusion {
         double b_over_a;
         double half_a;
         int nr_timesteps;
+        int Ly_index;
+        int Lx_index;
+        double* dummy_ptr;
                 
         // Solution fields.
         double* u;
         double* v;
         double* u_next;
         double* v_next;
-        double* dummy_ptr;
         
-        int Ly_index;
-        int Lx_index;
         
         
     // Methods are public as these must be accessed outside.
@@ -61,6 +61,8 @@ class ReactionDiffusion {
         
         /// Saves
         void Terminate();
+        
+        ~ReactionDiffusion();   // Destructor
         
 };
 

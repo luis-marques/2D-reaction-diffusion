@@ -5,16 +5,18 @@
  * 
  * Author: CID-01715222.
  */
+
 #include <iostream>
 
 #include <boost/program_options.hpp>
 #include <omp.h>
 
+#include "ReactionDiffusion.h"
+
 // To improve code readibility
 using namespace std;
 namespace po = boost::program_options;
 
-#include "ReactionDiffusion.h"
 
 int main(int argc, char* argv[]) {
     
@@ -100,21 +102,25 @@ int main(int argc, char* argv[]) {
     const double mu2 = vm["mu2"].as<double>();
     const double eps = vm["eps"].as<double>();
  
-    
+ //{
     // Initializing Reaction Diffusion class
-    ReactionDiffusion react_diff;
+    //ReactionDiffusion react_diff;
+    ReactionDiffusion* react_diff = new ReactionDiffusion();
     
     // Setting the problem parameters as specific in the command-line
-    react_diff.SetParameters(dt, T, Nx, Ny, a, b, mu1, mu2, eps);
+    //react_diff.SetParameters(dt, T, Nx, Ny, a, b, mu1, mu2, eps);
     
+    react_diff->SetParameters(dt, T, Nx, Ny, a, b, mu1, mu2, eps);
+    react_diff->SetInitialConditions();
+    react_diff->TimeIntegrate();
+    react_diff->Terminate();
+    //react_diff.SetInitialConditions();
     
-    react_diff.SetInitialConditions();
-    
-    
-    react_diff.TimeIntegrate();
+    delete react_diff;
+    //react_diff.TimeIntegrate();
     
 
-    react_diff.Terminate();
-    
+    //react_diff.Terminate();
+ //}
     return 0;
 }

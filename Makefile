@@ -1,28 +1,32 @@
-# For ease of changing between "debug" and "release" builds
-# Default behavior is optimized build, to get debug build run "$ make DEBUG=1"
-DEBUG		?= 0
+# Desc: The "DEBUG" variable is to facilitate changing between "debug"
+# and "release" builds of the code. The first containts debugging symbols,
+# compiler flags to provide warnings and is compiled without any optimizations.
+# The second is the default build of the code and contains optimizations flags.
+# To compile the "debug" build run: "$ make DEBUG=1".
+# Reasoning: "-march=native"
+# Source: https://wiki.gentoo.org/wiki/GCC_optimization#Optimizing
 
-# https://wiki.gentoo.org/wiki/GCC_optimization#Optimizing
 
+## TEST O4 vs O4 vs Ofast vs
+DEBUG			?= 0
 ifeq ($(DEBUG), 1)
 	CXXFLAGS	= -fopenmp -std=c++11 -Wall -Wshadow -pedantic -O0 -g
 else
 	CXXFLAGS	= -fopenmp -std=c++11 -O4 -march=native
 endif
 
-# -march=native
 
-CC			= g++
-LDLIBS		= -lboost_program_options
-LDFLAGS		= -fopenmp
-TARGET		= main
-HDRS 		= ReactionDiffusion.h
+CC				= g++
+LDLIBS			= -lboost_program_options
+LDFLAGS			= -fopenmp
+TARGET			= main
+HDRS 			= ReactionDiffusion.h
 
 # Command-line arguments providing parameters of the 4 test cases
-TEST1_PARAMS = --dt 0.001 --T 100 --Nx 101 --Ny 101 --a 0.75 --b 0.06 --eps 50.0 --mu1 5.0 --mu2 0.0
-TEST2_PARAMS = --dt 0.001 --T 100 --Nx 251 --Ny 251 --a 0.75 --b 0.06 --eps 13.0 --mu1 5.0 --mu2 0.0
-TEST3_PARAMS = --dt 0.001 --T 100 --Nx 101 --Ny 101 --a 0.5 --b 0.1 --eps 50.0 --mu1 5.0 --mu2 0.0
-TEST4_PARAMS = --dt 0.001 --T 100 --Nx 151 --Ny 81 --a 0.75 --b 0.0001 --eps 12.5 --mu1 1.0 --mu2 0.01
+TEST1_PARAMS 	= --dt 0.001 --T 100 --Nx 101 --Ny 101 --a 0.75 --b 0.06 --eps 50.0 --mu1 5.0 --mu2 0.0
+TEST2_PARAMS 	= --dt 0.001 --T 100 --Nx 251 --Ny 251 --a 0.75 --b 0.06 --eps 13.0 --mu1 5.0 --mu2 0.0
+TEST3_PARAMS 	= --dt 0.001 --T 100 --Nx 101 --Ny 101 --a 0.5 --b 0.1 --eps 50.0 --mu1 5.0 --mu2 0.0
+TEST4_PARAMS 	= --dt 0.001 --T 100 --Nx 151 --Ny 81 --a 0.75 --b 0.0001 --eps 12.5 --mu1 1.0 --mu2 0.01
 
 # Setting "default" target
 default: $(TARGET)
