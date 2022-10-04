@@ -8,7 +8,7 @@ using namespace std;
 /**
  * @brief Takes in the command-line arguments as parsed by boost_program_options and stores
  * their values in the class members. Allocates memory to solutions fields. Pre-calculates any
- * variables that will be repeatedly used in time integration. Calculates number of timesteps
+ * variables that will be repeatedly used in time integration. Calculates number of time-steps
  * required to perform the desired time integration.
  * @param arg_dt Integration time-step.
  * @param arg_T Total integration time.
@@ -49,7 +49,7 @@ void ReactionDiffusion::SetParameters(
         Lx_index    = (Nx-1);
         Ly_index    = Nx * (Ny-1);
         
-        // Allocating memomry for the solution fields.
+        // Allocating memory for the solution fields.
         u           = new double[Nx*Ny];
         v           = new double[Nx*Ny];
         u_next      = new double[Nx*Ny];
@@ -81,15 +81,15 @@ void ReactionDiffusion::SetParameters(
 
 /**
  * @brief Populates the 'u','v' arrays with their initial conditions. These are stored in
- * column-major fomat.
+ * column-major format.
  */
 void ReactionDiffusion::SetInitialConditions() {
     
-    // Since this is only called once, order of loops is negligble for performance.
+    // Since this is only called once, order of loops is negligible for performance.
     // Nevertheless, for column-major matrices, it is best to have the inner loop be over
     // the rows (i.e. make the row index be the fastest changing index) as this way we
     // exploit cache-locality. 
-    // Throughtout the code, 'i' is used for the row index, 'j' for the column index, 
+    // Throughout the code, 'i' is used for the row index, 'j' for the column index, 
     // 'Nx' is the number of rows and 'Ny' the number of columns.
     for (int j = 0; j < Ny; ++j) {    
         for (int i = 0; i < Nx; ++i) {
@@ -118,7 +118,7 @@ void ReactionDiffusion::SetInitialConditions() {
 /**
  * @brief Performs integration over time using the Explicit (Forward)
  * Euler numerical scheme. A discrete update of the 'u','v' arrays is run \f$ n=T/dt \f$ times
- * where \f$ dt \f$ is timestep used for integration and
+ * where \f$ dt \f$ is time-step used for integration and
  * \f$ T \f$ the total integration time.
  */
 void ReactionDiffusion::TimeIntegrate() {
@@ -271,7 +271,7 @@ void ReactionDiffusion::TimeIntegrate() {
         
         
         // All the threads have finished running due to implicit barrier above (i.e. all the grid-points have been
-        // updated from timestep n to timestep n+1. Thus we can now store the calculated u^{n+1} = u_next
+        // updated from time-step n to time-step n+1. Thus we can now store the calculated u^{n+1} = u_next
         // and v^{n+1} = v_next into 'u','v' and prepare for following time-step.
         // Note: we are also passing the 'old' 'u','v' into 'u_next' and 'v_next' but this is fine since
         // when evaluating 'u_next' in the following time-step we will solely use the values of 'u' and not any
@@ -324,11 +324,11 @@ void ReactionDiffusion::TimeIntegrate() {
  */
 void ReactionDiffusion::SaveToFile() {
     
-    cout << "Writting output of simulation to file 'output.txt'." << endl;
+    cout << "Writing output of simulation to file 'output.txt'." << endl;
     
     ofstream vOut("output.txt", ios::out | ios::trunc);
     
-    // Checking that file opened successfuly.
+    // Checking that file opened successfully.
     if (vOut.is_open()) {
         cout << "File opened successfully." << endl;
         

@@ -6,3 +6,5 @@ output.txt
 latex/
 html/
 initial*
+
+.DS_Store

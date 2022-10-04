@@ -14,7 +14,7 @@
 #include <omp.h>
 #include "ReactionDiffusion.h"
 
-// To improve code readibility
+// To improve code readability
 using namespace std;
 namespace po = boost::program_options;
 
@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
 
         ;
 
-    // Parses command-line arguments and generating map containg the options and values.
+    // Parses command-line arguments and generating map containing the options and values.
     po::variables_map vm;
     
     // Handles errors with the passed arguments and provides helpful error messages.
@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     
-    // Extracts the parameter values given to varibles using the appropriate datatype.
+    // Extracts the parameter values given to variables using the appropriate datatype.
     const double dt = vm["dt"].as<double>();
     const int T = vm["T"].as<int>();
     const int Nx = vm["Nx"].as<int>();
@@ -109,12 +109,12 @@ int main(int argc, char* argv[]) {
     const double eps = vm["eps"].as<double>();
     
     
-    // Since the Explicit (Forward) Euler scheme used for time stepping is conditonally stable,
+    // Since the Explicit (Forward) Euler scheme used for time stepping is conditionally stable,
     // one could check that the given value of 'dt' is small enough to ensure stability of the
     // method. Since dt is always 0.001 in all the test cases, such a method was never implemented.
  
 
-    // Initiallizes the ReactionDiffusion class.
+    // Initializes the ReactionDiffusion class.
     ReactionDiffusion react_diff;
     
     // Passes the parsed parameter values to the class.
@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
     // Sets the initial conditions of the 'u','v' solution fields.
     react_diff.SetInitialConditions();
     
-    // Performs time-integration from t=0 to t=T with timestep = dt.
+    // Performs time-integration from t=0 to t=T with time-step = dt.
     react_diff.TimeIntegrate();
     
     // Saves result of simulation to file called 'output.txt'.

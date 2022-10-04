@@ -25,7 +25,7 @@ class ReactionDiffusion {
         double b;               // Parameter 'b' of Barkley model problem.
         double mu1;             // Diffusion coefficient for 'u'.
         double mu2;             // Diffusion coefficient for 'v'.
-        double eps;             // Paramter 'eps' of Barkley model problem.
+        double eps;             // Parameter 'eps' of Barkley model problem.
         
         // Solution fields.
         double* u;              // u^{n} -> Solution field for 'u' at time-step n.
@@ -34,7 +34,7 @@ class ReactionDiffusion {
         double* v_next;         // v^{n+1} -> Solution field for 'v' at time-step n+1.
         
         // Variables defined to improve code performance.
-        double recip_a;         // Reciprobal of parameter 'a' (i.e. = 1/a)
+        double recip_a;         // Reciprocal of parameter 'a' (i.e. = 1/a)
         double u_grad_coef;     // (i.e. = mu1*dt / h^2, where we take h=1)
         double v_grad_coef;     // (i.e. = mu2*dt / h^2, where we take h=1)
         double dt_eps;          // (i.e. = dt*eps
@@ -45,7 +45,7 @@ class ReactionDiffusion {
 
         // Recall 'u','v' are stored in column-major format, 'Nx' is the number
         // of rows and 'Ny' the number of columns. These 2 variables help with
-        // code readiblity and slightly with performance.
+        // code readability and slightly with performance.
         
         // Provides number of elements that must be traversed to go from
         // u_{0,j} to u_{Lx,j} (i.e. = Nx-1) 
